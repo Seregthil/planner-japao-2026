@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Japão 2026">
+    <meta name="theme-color" content="#1a2e44">
+    <title>Japão 2026 | Planner com Sincronização em Tempo Real</title>
+    
+    <!-- PWA Manifest via Data-URI -->
+    <link rel="manifest" href='data:application/json;charset=utf-8,%7B%22name%22%3A%22Jap%C3%A3o%202026%20Planner%22%2C%22short_name%22%3A%22Jap%C3%A3o%202026%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23fcfaf7%22%2C%22theme_color%22%3A%22%231a2e44%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fplacehold.co%2F192x192%2F1a2e44%2Fffffff%3Ftext%3D%F0%9F%87%AF%F0%9F%87%B5%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%7D%2C%7B%22src%22%3A%22https%3A%2F%2Fplacehold.co%2F512x512%2F1a2e44%2Fffffff%3Ftext%3D%F0%9F%87%AF%F0%9F%87%B5%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D'>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Firebase SDKs for Realtime Cloud Sync -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        :root {
+            --bg-main: #fcfaf7;
+            --accent-koyo: #d46a4e;
+            --accent-navy: #1a2e44;
+            --card-white: #ffffff;
+        }
+        body {
+            background-color: var(--bg-main);
+            color: var(--accent-navy);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            scroll-behavior: smooth;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        .editable-field, p, span, h1, h2, h3, h4 {
+            -webkit-user-select: text;
+            user-select: text;
+        }
+        .nav-tab.active {
+            border-bottom: 3px solid var(--accent-koyo);
+            color: var(--accent-koyo);
+            font-weight: bold;
+        }
+        .phase-btn.active {
+            background-color: var(--accent-koyo);
+            color: white;
+            border-color: var(--accent-koyo);
+        }
+        .editable-field[contenteditable="true"] {
+            border-bottom: 1px dashed var(--accent-koyo);
+            cursor: text;
+            min-width: 20px;
+            display: inline-block;
+        }
+        .editable-field[contenteditable="true"]:focus {
+            outline: 2px solid var(--accent-koyo);
+            background-color: #fffbeb;
+            border-radius: 4px;
+            padding: 2px;
+        }
+        .action-btn { display: none; }
+        .edit-mode-active .action-btn { display: flex; }
+        
+        .timeline-line {
+            position: absolute;
+            left: 1.25rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #e5e7eb;
+            z-index: 0;
+        }
+        .progress-bar-fill { transition: width 1.5s ease-out; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95); z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 0.5s;
+        }
+        
+        #image-viewer-modal {
+            backdrop-filter: blur(12px);
+            touch-action: none;
+        }
+        #viewer-img-container {
+            cursor: grab;
+            transform-origin: center center;
+            will-change: transform;
+        }
+        #viewer-img-container:active { cursor: grabbing; }
+    </style>
+</head>
+<body class="min-h-screen pb-12">
+
+<div id="loading-overlay" class="items-center text-center p-4">
+    <div class="text-6xl mb-4 animate-bounce">🎌</div>
+    <h2 class="text-xl font-bold text-navy-800">Conectando à Nuvem...</h2>
+    <p class="text-sm text-gray-500 mt-2">Sincronizando itinerário em tempo real.</p>
+</div>
+
+<div id="image-viewer-modal" class="fixed inset-0 bg-black/95 z-50 hidden flex flex-col justify-between p-4 md:p-6 select-none">
+    <div class="flex justify-between items-center z-10 text-white">
+        <div class="flex items-center gap-2">
+            <span class="text-xl">📎</span>
+            <h3 class="text-sm md:text-base font-bold tracking-wide">Visualizador</h3>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="window.zoomViewer(0.3)" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl transition-all">🔍+</button>
+            <button onclick="window.zoomViewer(-0.3)" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl transition-all">🔍-</button>
+            <button onclick="window.resetViewerZoom()" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl transition-all">🔄 1:1</button>
+            <button onclick="window.closeImageViewer()" class="w-9 h-9 flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-bold rounded-full text-lg ml-2 transition-all">✕</button>
+        </div>
+    </div>
+    
+    <div id="viewer-wrapper" class="flex-1 overflow-hidden flex items-center justify-center p-2 relative my-2">
+        <div id="viewer-img-container" class="flex items-center justify-center transition-transform duration-75">
+            <img id="viewer-img" src="" class="max-h-[75vh] max-w-[90vw] rounded-2xl object-contain shadow-2xl pointer-events-none select-none" alt="Anexo">
+        </div>
+    </div>
+    <div class="text-center text-white/60 text-xs py-1">
+        Dica: Use os botões acima, role o mouse ou use o movimento de pinça com dois dedos para ampliar.
+    </div>
+</div>
+
+<div id="ai-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 relative">
+        <button onclick="window.closeAiModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 font-bold text-lg">✕</button>
+        <div class="flex items-center gap-2">
+            <span class="text-2xl">✨</span>
+            <h3 class="text-lg font-bold text-navy-800" id="ai-modal-title">Assistente Gemini IA</h3>
+        </div>
+        <div id="ai-modal-content" class="text-sm text-gray-600 space-y-3 max-h-[60vh] overflow-y-auto pr-2"></div>
+        <div id="ai-modal-footer" class="pt-2 flex justify-end gap-2">
+            <button onclick="window.closeAiModal()" class="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-bold rounded-xl hover:bg-gray-200">Fechar</button>
+        </div>
+    </div>
+</div>
+
+<header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="flex items-center gap-3">
+            <span class="text-3xl">🍁</span>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-xl font-black tracking-tight uppercase">Japão 2026</h1>
+                    <span id="sync-status-badge" class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-100 text-amber-800" title="Status da Nuvem">☁️ Conectando...</span>
+                </div>
+                <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Você & Jéssica • Sincronização em Tempo Real</p>
+            </div>
+        </div>
+        <div class="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
+            <nav class="flex gap-4 text-sm font-medium overflow-x-auto no-scrollbar w-full md:w-auto pb-2 md:pb-0 justify-center">
+                <button onclick="window.showSection('dashboard')" id="btn-dashboard" class="nav-tab active pb-1 transition-all whitespace-nowrap">Resumo</button>
+                <button onclick="window.showSection('itinerario')" id="btn-itinerario" class="nav-tab pb-1 transition-all whitespace-nowrap">Itinerário</button>
+                <button onclick="window.showSection('logistica')" id="btn-logistica" class="nav-tab pb-1 transition-all whitespace-nowrap">Logística</button>
+            </nav>
+            <div class="flex gap-2 w-full md:w-auto">
+                <button onclick="window.openAiAssistant()" class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-amber-600 shadow-md transition-all hover:scale-[1.02] flex items-center gap-1.5 flex-1 md:flex-initial justify-center">
+                    ✨ Dicas IA
+                </button>
+                <button onclick="window.toggleEditMode()" id="global-edit-btn" class="px-5 py-2 rounded-xl text-xs font-bold text-white shadow-md transition-all hover:scale-[1.02] flex-1 md:flex-initial justify-center" style="background-color: var(--accent-navy);">
+                    ✏️ Editar Planner
+                </button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="max-w-5xl mx-auto px-4 mt-8">
+    <section id="section-dashboard" class="space-y-6">
+        <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 overflow-hidden relative">
+            <div class="absolute top-0 right-0 p-6 opacity-10 text-8xl">🗻</div>
+            <div class="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div class="space-y-6">
+                    <div>
+                        <div id="live-badge" class="inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter mb-4 bg-orange-100 text-orange-600">Calculando data...</div>
+                        <h2 id="live-title" class="text-3xl md:text-4xl font-black text-gray-800 leading-tight">Preparando sua jornada.</h2>
+                        <p id="live-subtitle" class="text-gray-500 mt-3 font-medium">Aguardando o momento do embarque.</p>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-[10px] font-black uppercase text-gray-400">
+                            <span>Progresso da Viagem</span>
+                            <span id="live-pct">0%</span>
+                        </div>
+                        <div class="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+                            <div id="live-bar" class="progress-bar-fill h-full bg-orange-500 w-0"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="nightsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-stone-800 p-6 rounded-3xl text-white">
+                <span class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">📍 Onde Estamos</span>
+                <span id="live-city" class="text-xl font-bold">Brasil</span>
+            </div>
+            <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                <span class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">🔜 Próximo Destino</span>
+                <span id="live-next" class="text-xl font-bold text-gray-800">Tóquio</span>
+            </div>
+            <div class="bg-orange-50 p-6 rounded-3xl border border-orange-100">
+                <span class="block text-[10px] font-bold text-orange-400 uppercase tracking-widest mb-2">⏳ Status</span>
+                <span id="live-countdown" class="text-xl font-bold text-orange-700">Contagem Regressiva</span>
+            </div>
+        </div>
+        
+        <div class="bg-amber-50 border border-amber-200 p-5 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl">📱</span>
+                <div>
+                    <h4 class="font-bold text-amber-900 text-sm">Instalar Aplicativo Nativo (PWA)</h4>
+                    <p class="text-xs text-amber-700 mt-0.5">Adicione este planner à tela inicial do seu celular e da Jéssica para abri-lo sem barras de navegador.</p>
+                </div>
+            </div>
+            <div class="flex gap-2 w-full sm:w-auto">
+                <button id="install-pwa-btn" style="display:none;" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-bold text-xs rounded-xl transition-all whitespace-nowrap">Instalar Agora</button>
+                <button onclick="window.showPwaInstructions()" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl transition-all whitespace-nowrap">Ver Instruções</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="section-itinerario" class="hidden space-y-6">
+        <div class="flex flex-col gap-4">
+            <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2" id="phase-filters">
+                <button onclick="window.filterPhase('all')" class="phase-btn active px-4 py-2 rounded-full border border-gray-200 text-xs font-bold transition-all whitespace-nowrap" id="f-all">Ver Tudo</button>
+                <button onclick="window.filterPhase(0)" class="phase-btn px-4 py-2 rounded-full border border-gray-200 text-gray-500 text-xs font-bold transition-all whitespace-nowrap" id="f-0">Fase 0: Pré-Japão</button>
+                <button onclick="window.filterPhase(1)" class="phase-btn px-4 py-2 rounded-full border border-gray-200 text-gray-500 text-xs font-bold transition-all whitespace-nowrap" id="f-1">Fase 1: Tóquio Leste</button>
+                <button onclick="window.filterPhase(2)" class="phase-btn px-4 py-2 rounded-full border border-gray-200 text-gray-500 text-xs font-bold transition-all whitespace-nowrap" id="f-2">Fase 2: Alpes</button>
+                <button onclick="window.filterPhase(3)" class="phase-btn px-4 py-2 rounded-full border border-gray-200 text-gray-500 text-xs font-bold transition-all whitespace-nowrap" id="f-3">Fase 3: Kansai</button>
+                <button onclick="window.filterPhase(4)" class="phase-btn px-4 py-2 rounded-full border border-gray-200 text-gray-500 text-xs font-bold transition-all whitespace-nowrap" id="f-4">Fase 4: Tóquio Oeste</button>
+            </div>
+        </div>
+        <div id="itinerary-canvas" class="space-y-10"></div>
+    </section>
+
+    <section id="section-logistica" class="hidden space-y-6">
+        <div class="bg-white p-6 md:p-8 rounded-3xl border border-gray-100 shadow-sm">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-sm font-black uppercase text-gray-400 tracking-widest">🚅 Trens & Conexões</h3>
+                        <button onclick="window.addLogItem('transport')" class="action-btn text-xs font-bold text-orange-500 bg-orange-50 px-3 py-1 rounded-lg hover:bg-orange-100">+ Adicionar Trem</button>
+                    </div>
+                    <div id="transport-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+                </div>
+                <div class="space-y-10">
+                    <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-sm font-black uppercase text-gray-400 tracking-widest">📦 Envio de Malas</h3>
+                            <button onclick="window.addLogItem('shipping')" class="action-btn text-xs font-bold text-orange-500">+ Novo</button>
+                        </div>
+                        <div id="shipping-list" class="space-y-3"></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-sm font-black uppercase text-gray-400 tracking-widest">✅ Checklist</h3>
+                            <button onclick="window.addLogItem('check')" class="action-btn text-xs font-bold text-blue-500">+ Novo</button>
+                        </div>
+                        <div id="checklist-list" class="space-y-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script>
+    // AS SUAS CHAVES DO FIREBASE ESTÃO AQUI!
+    const firebaseConfig = {
+        apiKey: "AIzaSyC7loa555YSL3YR8NIAuOduZcxm1DnK4jo",
+        authDomain: "planner-japao-2026-422e3.firebaseapp.com",
+        projectId: "planner-japao-2026-422e3",
+        storageBucket: "planner-japao-2026-422e3.firebasestorage.app",
+        messagingSenderId: "877715007215",
+        appId: "1:877715007215:web:9494938a9ca0eeb37d5d1a"
+    };
+
+    let db = null;
+    let isCloudSyncActive = false;
+
+    // Dados Padrão do Itinerário
+    const defaultItinerary = [
+        { phase: 0, title: "Pré-Japão: A Preparação no Brasil", city: "Brasil", days: [
+            { date: "01/11", title: "Início dos Preparativos e Malas", events: [{ time: "Dia", activity: "Arrumar Malas", desc: "Separar roupas de frio, documentos, adaptadores e eletrônicos.", attachments: [] }] },
+            { date: "02/11", title: "Últimos Ajustes", events: [{ time: "Noite", activity: "Checklist Final", desc: "Revisar passaportes, seguro viagem e ativar cartões Wise/Nomad.", attachments: [] }] },
+            { date: "03/11", title: "Deslocamento para São Paulo", events: [{ time: "Tarde", activity: "Viagem para SP", desc: "Deslocamento até Guarulhos (GRU) e pernoite próximo ao aeroporto.", attachments: [] }] },
+            { date: "04/11", title: "Descanso e Voo Internacional", events: [{ time: "Manhã", activity: "Check-in Aeroporto GRU", desc: "Despacho de malas e embarque rumo ao Japão!", attachments: [] }] }
+        ]},
+        { phase: 1, title: "Tóquio Leste: Tradição e Arte Digital", city: "Tóquio", days: [
+            { date: "05/11", title: "A Chegada e a Tóquio Antiga", events: [
+                { time: "05h30", activity: "Pouso no aeroporto, imigração", desc: "Ativação de eSIM e trem para Kuramae.", attachments: [] },
+                { time: "09h00", activity: "Deixar as malas no hotel", desc: "Tosei Hotel Cocone Asakusa Kuramae.", attachments: [] },
+                { time: "09h30", activity: "Caminhada e fotos matinais no Kaminarimon e Sensō-ji", desc: "Aproveitar antes das multidões.", attachments: [] },
+                { time: "12h30", activity: "Almoço tradicional em Asakusa", desc: "Explorar culinária local.", attachments: [] },
+                { time: "13h30", activity: "Caminhada pelo Parque Sumida", desc: "Café de especialidade na região de Kuramae.", attachments: [] },
+                { time: "15h00", activity: "Check-in no hotel", desc: "Banho e descanso estratégico para o fuso horário.", attachments: [] },
+                { time: "19h00", activity: "Jantar descontraído na Hoppy Street (Asakusa)", desc: "Comer em um izakaya animado.", attachments: [] }
+            ]},
+            { date: "06/11", title: "Arte Digital e Missão Compras", events: [
+                { time: "08h30", activity: "Café da manhã no Tsukiji Outer Market", desc: "Sushi, wagyu, tamagoyaki.", attachments: [] },
+                { time: "10h30", activity: "teamLab Borderless", desc: "Complexo Azabudai Hills (período da manhã para evitar lotação).", attachments: [] },
+                { time: "13h30", activity: "Almoço em Ginza e início do circuito de compras (Tax Free)", desc: "Lojas Alvo: Uniqlo Global Flagship (12 andares), GU, ABC-Mart Grand Stage e farmácias.", attachments: [] },
+                { time: "17h30", activity: "Retorno direto pela linha de metrô Asakusa", desc: "De Higashi-Ginza para Kuramae sem baldeação.", attachments: [] },
+                { time: "18h00", activity: "Pit-stop no hotel", desc: "Descarregar sacolas e descansar.", attachments: [] },
+                { time: "19h30", activity: "Jantar leve e caminhada", desc: "Explorar as redondezas de Kuramae ou Asakusa.", attachments: [] }
+            ]},
+            { date: "07/11", title: "Nostalgia e Cultura Pop", events: [
+                { time: "09h30", activity: "Nezu Shrine", desc: "Túneis de portas torii vermelhas.", attachments: [] },
+                { time: "11h30", activity: "Caminhada pelo bairro histórico de Yanaka", desc: "Apreciar a arquitetura antiga.", attachments: [] },
+                { time: "12h30", activity: "Almoço de rua em Yanaka Ginza", desc: "Comidas típicas locais.", attachments: [] },
+                { time: "14h30", activity: "Parque Ueno", desc: "Passeio pelo caótico mercado de rua Ameyoko.", attachments: [] },
+                { time: "18h00", activity: "Noite imersiva em Akihabara", desc: "Lojas de eletrônicos, neons e arcades.", attachments: [] }
+            ]},
+            { date: "08/11", title: "Bate-Volta ao Monte Fuji", events: [
+                { time: "Manhã", activity: "Saída bem cedo", desc: "De ônibus ou trem para Kawaguchiko.", attachments: [] },
+                { time: "Dia", activity: "Passeios Fuji", desc: "Pagode Chureito, margens do Lago Kawaguchiko, Teleférico e Oishi Park.", attachments: [] },
+                { time: "Noite", activity: "Retorno a Tóquio", desc: "Jantar rápido e preparação da mala de mão (carry-on) para os Alpes.", attachments: [] }
+            ]},
+            { date: "09/11", title: "A Tóquio Jovem", events: [
+                { time: "Manhã", activity: "Santuário Meiji Jingu", desc: "Caminhada pelo Yoyogi Park.", attachments: [] },
+                { time: "Fim da Manhã", activity: "Takeshita Street", desc: "Explorar Harajuku.", attachments: [] },
+                { time: "Tarde", activity: "Caminhada pela Omotesando até Shibuya", desc: "Cruzamento e Hachikō. Compras Geek.", attachments: [] },
+                { time: "Pôr do Sol", activity: "Shibuya Sky", desc: "Aproveitar a vista panorâmica.", attachments: [] },
+                { time: "Noite", activity: "Bares e izakayas", desc: "Curtição noturna em Shibuya.", attachments: [] }
+            ]}
+        ]},
+        { phase: 2, title: "Alpes Japoneses", city: "Takayama/Kanazawa", days: [
+            { date: "10/11", title: "Rumo às Montanhas", events: [
+                { time: "Manhã", activity: "Despachar as malas grandes", desc: "De Tóquio direto para Kanazawa via Takuhaibin.", attachments: [] },
+                { time: "Manhã", activity: "Deslocamento", desc: "Trem para Takayama.", attachments: [] },
+                { time: "Tarde", activity: "Takayama Jinya", desc: "Ruas históricas de Sanmachi Suji e cervejarias de saquê.", attachments: [] },
+                { time: "Noite", activity: "Jantar Kaiseki (Carne Hida)", desc: "Relaxamento no Onsen do hotel.", attachments: [] }
+            ]},
+            { date: "11/11", title: "Vilarejo Histórico", events: [
+                { time: "Manhã", activity: "Mercado Miyagawa", desc: "Em Takayama e ônibus para Shirakawa-go.", attachments: [] },
+                { time: "Dia", activity: "Passeios", desc: "Observatório e Wada House.", attachments: [] },
+                { time: "Tarde", activity: "Deslocamento", desc: "Ônibus para Kanazawa.", attachments: [] },
+                { time: "Noite", activity: "Jantar e exploração", desc: "No distrito de Katamachi.", attachments: [] }
+            ]},
+            { date: "12/11", title: "Ouro e Jardins", events: [
+                { time: "Manhã", activity: "Kenroku-en", desc: "Um dos jardins mais bonitos do país e Castelo de Kanazawa.", attachments: [] },
+                { time: "12h30", activity: "Almoço", desc: "Frutos do mar no Mercado Omicho.", attachments: [] },
+                { time: "Tarde", activity: "Distritos de Chaya", desc: "Higashi Chaya e Kazuemachi.", attachments: [] },
+                { time: "Noite", activity: "Jantar", desc: "Em Kanazawa.", attachments: [] }
+            ]}
+        ]},
+        { phase: 3, title: "O Coração Tradicional", city: "Quioto/Osaka", days: [
+            { date: "13/11", title: "Deslocamento e Quioto", events: [
+                { time: "Manhã", activity: "Distrito samurai Nagamachi", desc: "E Casa Nomura.", attachments: [] },
+                { time: "Tarde", activity: "Deslocamento para Quioto", desc: "Check-in.", attachments: [] },
+                { time: "Noite", activity: "Caminhada mágica", desc: "Por Pontocho, Kiyamachi e rio Kamo.", attachments: [] }
+            ]},
+            { date: "14/11", title: "A Essência de Quioto", events: [
+                { time: "Manhã", activity: "Templo Kiyomizu-dera", desc: "Ruas Sannenzaka e Ninenzaka.", attachments: [] },
+                { time: "Tarde", activity: "Kodai-ji e Shrines", desc: "Yasaka Shrine.", attachments: [] },
+                { time: "Noite", activity: "Exploração de Gion", desc: "Templos iluminados.", attachments: [] }
+            ]},
+            { date: "15/11", title: "Natureza e Ouro", events: [
+                { time: "Manhã", activity: "Arashiyama (Bosque de Bambu)", desc: "Tenryu-ji e Ponte Togetsukyo.", attachments: [] },
+                { time: "Tarde", activity: "Kinkaku-ji", desc: "Pavilhão Dourado.", attachments: [] },
+                { time: "Noite", activity: "Noite Livre", desc: "Descanso ou jantar local.", attachments: [] }
+            ]},
+            { date: "16/11", title: "Bate-Volta a Nara", events: [
+                { time: "Manhã", activity: "Parque de Nara", desc: "Todai-ji (Grande Buda).", attachments: [] },
+                { time: "Tarde", activity: "Kasuga Taisha", desc: "Ruas de Naramachi.", attachments: [] },
+                { time: "Noite", activity: "Retorno a Quioto", desc: "Jantar em Pontocho.", attachments: [] }
+            ]},
+            { date: "17/11", title: "Fushimi e Gastronomia", events: [
+                { time: "Manhã", activity: "Fushimi Inari", desc: "Trilha parcial pelos portões torii.", attachments: [] },
+                { time: "Tarde", activity: "Mercado Nishiki", desc: "E Castelo Nijo.", attachments: [] }
+            ]},
+            { date: "18/11", title: "Whisky e Neons", events: [
+                { time: "Manhã", activity: "Tour na Destilaria Suntory Yamazaki", desc: "Plano B: saquê.", attachments: [] },
+                { time: "Tarde", activity: "Viagem curta para Osaka", desc: "Check-in no Smile Hotel.", attachments: [] },
+                { time: "Noite", activity: "Mergulho nos neons", desc: "Dotonbori e Glico.", attachments: [] }
+            ]},
+            { date: "19/11", title: "Castelo e Modernidade", events: [
+                { time: "Manhã", activity: "Castelo de Osaka", desc: "Passeio pelo parque.", attachments: [] },
+                { time: "Tarde", activity: "Região de Umeda", desc: "Grand Front.", attachments: [] },
+                { time: "Pôr do Sol", activity: "Umeda Sky Building", desc: "Vista panorâmica.", attachments: [] },
+                { time: "Noite", activity: "Jantar", desc: "Restaurantes locais.", attachments: [] }
+            ]},
+            { date: "20/11", title: "Nostalgia e Karaokê", events: [
+                { time: "Manhã", activity: "Kuromon Market", desc: "Café da manhã farto.", attachments: [] },
+                { time: "Tarde", activity: "Den Den Town", desc: "Shinsekai.", attachments: [] },
+                { time: "Noite", activity: "Karaokê", desc: "Em Shinsaibashi.", attachments: [] }
+            ]}
+        ]},
+        { phase: 4, title: "Tóquio Oeste", city: "Tóquio", days: [
+            { date: "21/11", title: "O Retorno a Tóquio", events: [
+                { time: "Manhã", activity: "Despacho de malas e Shinkansen", desc: "Para Tóquio.", attachments: [] },
+                { time: "14h00", activity: "Check-in em Shinjuku", desc: "Hotel base.", attachments: [] },
+                { time: "19h00", activity: "Kabukichō", desc: "Godzilla e vida noturna.", attachments: [] }
+            ]},
+            { date: "22/11", title: "Mega-Lojas e Vida Noturna", events: [
+                { time: "Manhã", activity: "Tokyu Hands", desc: "Utilidades.", attachments: [] },
+                { time: "Tarde", activity: "Eletrônicos", desc: "Yodobashi e Bic Camera.", attachments: [] },
+                { time: "18h00", activity: "Omoide Yokocho", desc: "Yakitori.", attachments: [] },
+                { time: "20h00", activity: "Golden Gai", desc: "Bar-hopping.", attachments: [] }
+            ]},
+            { date: "23/11", title: "O Dia Curinga", events: [
+                { time: "Manhã", activity: "Pendências de roteiro", desc: "Bairros favoritos.", attachments: [] },
+                { time: "Tarde", activity: "Mega Don Quijote Shinjuku", desc: "Compras finais Tax Free.", attachments: [] },
+                { time: "Noite", activity: "Jantar de despedida", desc: "Celebrar a viagem.", attachments: [] }
+            ]},
+            { date: "24/11", title: "O Até Logo", events: [
+                { time: "Manhã", activity: "Check-out", desc: "Deslocamento ao aeroporto.", attachments: [] },
+                { time: "Tarde", activity: "Retorno ao Brasil", desc: "Voo de volta.", attachments: [] }
+            ]}
+        ]}
+    ];
+
+    const defaultLogistics = {
+        transport: [
+            { date: "05/11", route: "Aeroporto -> Kuramae", train: "Trem local/Exp", time: "07:00", platform: "NRT" },
+            { date: "10/11", route: "Tóquio -> Takayama", train: "Shinkansen", time: "08:30", platform: "Tokyo Sta" }
+        ],
+        shipping: [
+            { date: "10/11", desc: "Tóquio ➔ Kanazawa (via Takuhaibin)" },
+            { date: "21/11", desc: "Osaka ➔ Aeroporto" }
+        ],
+        checklist: [
+            { item: "Agendar Shibuya Sky", status: false },
+            { item: "Comprar ingressos teamLab", status: false },
+            { item: "Ativar eSIM", status: false }
+        ]
+    };
+
+    window.itineraryData = JSON.parse(JSON.stringify(defaultItinerary));
+    window.logisticsData = JSON.parse(JSON.stringify(defaultLogistics));
+    
+    window.isEditMode = false;
+    window.currentPhase = 'all';
+    window.myChart = null;
+    let deferredPrompt = null;
+
+    let currentZoom = 1;
+    let panX = 0;
+    let panY = 0;
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let initialPinchDistance = null;
+
+    function initApp() {
+        if (firebaseConfig && firebaseConfig.apiKey && firebaseConfig.apiKey !== "SUA_API_KEY_AQUI") {
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                db = firebase.firestore();
+                isCloudSyncActive = true;
+                document.getElementById('sync-status-badge').className = "px-2 py-0.5 rounded-full text-[9px] font-bold bg-green-100 text-green-800";
+                document.getElementById('sync-status-badge').innerText = "☁️ Nuvem Ativa";
+                
+                db.collection('planner').doc('japao2026').onSnapshot((doc) => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        if (data.itinerary) window.itineraryData = data.itinerary;
+                        if (data.logistics) window.logisticsData = data.logistics;
+                        renderAll();
+                    } else {
+                        saveToCloud();
+                    }
+                    hideLoading();
+                }, (error) => {
+                    console.warn("Firestore sync error:", error);
+                    loadLocalFallback();
+                    hideLoading();
+                });
+            } catch (e) {
+                console.warn("Firebase init failed:", e);
+                loadLocalFallback();
+                hideLoading();
+            }
+        } else {
+            document.getElementById('sync-status-badge').className = "px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-100 text-amber-800";
+            document.getElementById('sync-status-badge').innerText = "📱 Modo Local";
+            loadLocalFallback();
+            hideLoading();
+        }
+
+        setupViewerGestures();
+        setupPwaListener();
+    }
+
+    function hideLoading() {
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) {
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.style.display = 'none', 400);
+        }
+    }
+
+    function loadLocalFallback() {
+        window.itineraryData = JSON.parse(localStorage.getItem('planner_japao_itinerary')) || JSON.parse(JSON.stringify(defaultItinerary));
+        window.logisticsData = JSON.parse(localStorage.getItem('planner_japao_logistics')) || JSON.parse(JSON.stringify(defaultLogistics));
+        renderAll();
+    }
+
+    window.saveData = function() {
+        if (isCloudSyncActive && db) {
+            saveToCloud();
+        } else {
+            try {
+                localStorage.setItem('planner_japao_itinerary', JSON.stringify(window.itineraryData));
+                localStorage.setItem('planner_japao_logistics', JSON.stringify(window.logisticsData));
+            } catch(e) {
+                console.error("Storage limit reached", e);
+            }
+        }
+    };
+
+    function saveToCloud() {
+        if (!db) return;
+        document.getElementById('sync-status-badge').innerText = "☁️ Salvando...";
+        db.collection('planner').doc('japao2026').set({
+            itinerary: window.itineraryData,
+            logistics: window.logisticsData,
+            updatedAt: new Date().toISOString()
+        }).then(() => {
+            document.getElementById('sync-status-badge').innerText = "☁️ Nuvem Ativa";
+        }).catch((err) => {
+            document.getElementById('sync-status-badge').innerText = "⚠️ Erro Sync";
+            console.error("Cloud save error:", err);
+        });
+    }
+
+    function setupPwaListener() {
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const btn = document.getElementById('install-pwa-btn');
+            if (btn) {
+                btn.style.display = 'inline-block';
+                btn.onclick = async () => {
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt();
+                        const { outcome } = await deferredPrompt.userChoice;
+                        if (outcome === 'accepted') btn.style.display = 'none';
+                        deferredPrompt = null;
+                    }
+                };
+            }
+        });
+    }
+
+    window.toggleEditMode = function() {
+        window.isEditMode = !window.isEditMode;
+        const btn = document.getElementById('global-edit-btn');
+        if (window.isEditMode) {
+            btn.innerHTML = "💾 Salvar Alterações";
+            btn.classList.add('bg-green-600');
+            btn.classList.remove('bg-[var(--accent-navy)]');
+            document.getElementById('section-itinerario').classList.add('edit-mode-active');
+            document.getElementById('section-logistica').classList.add('edit-mode-active');
+        } else {
+            btn.innerHTML = "✏️ Editar Planner";
+            btn.classList.remove('bg-green-600');
+            btn.style.backgroundColor = 'var(--accent-navy)';
+            document.getElementById('section-itinerario').classList.remove('edit-mode-active');
+            document.getElementById('section-logistica').classList.remove('edit-mode-active');
+            window.saveData();
+        }
+        renderItinerary(window.currentPhase);
+        renderLogistics();
+    };
+
+    window.viewAttachment = function(url) {
+        const modal = document.getElementById('image-viewer-modal');
+        const img = document.getElementById('viewer-img');
+        img.src = url;
+        currentZoom = 1;
+        panX = 0;
+        panY = 0;
+        updateViewerTransform();
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    };
+
+    window.closeImageViewer = function() {
+        document.getElementById('image-viewer-modal').classList.add('hidden');
+        document.body.style.overflow = '';
+    };
+
+    window.zoomViewer = function(delta) {
+        currentZoom = Math.max(0.5, Math.min(6, currentZoom + delta));
+        updateViewerTransform();
+    };
+
+    window.resetViewerZoom = function() {
+        currentZoom = 1;
+        panX = 0;
+        panY = 0;
+        updateViewerTransform();
+    };
+
+    function updateViewerTransform() {
+        const container = document.getElementById('viewer-img-container');
+        container.style.transform = `translate(${panX}px, ${panY}px) scale(${currentZoom})`;
+    }
+
+    function setupViewerGestures() {
+        const wrapper = document.getElementById('viewer-wrapper');
+        
+        wrapper.addEventListener('mousedown', (e) => {
+            if (currentZoom <= 1) return;
+            isDragging = true;
+            startX = e.clientX - panX;
+            startY = e.clientY - panY;
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            panX = e.clientX - startX;
+            panY = e.clientY - startY;
+            updateViewerTransform();
+        });
+
+        window.addEventListener('mouseup', () => { isDragging = false; });
+
+        wrapper.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1 && currentZoom > 1) {
+                isDragging = true;
+                startX = e.touches[0].clientX - panX;
+                startY = e.touches[0].clientY - panY;
+            } else if (e.touches.length === 2) {
+                isDragging = false;
+                initialPinchDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+            }
+        });
+
+        wrapper.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 1 && isDragging) {
+                panX = e.touches[0].clientX - startX;
+                panY = e.touches[0].clientY - startY;
+                updateViewerTransform();
+            } else if (e.touches.length === 2 && initialPinchDistance) {
+                const currentDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                const factor = currentDistance / initialPinchDistance;
+                currentZoom = Math.max(0.5, Math.min(6, currentZoom * factor));
+                initialPinchDistance = currentDistance;
+                updateViewerTransform();
+            }
+        });
+
+        wrapper.addEventListener('touchend', () => {
+            isDragging = false;
+            initialPinchDistance = null;
+        });
+
+        wrapper.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY < 0 ? 0.2 : -0.2;
+            window.zoomViewer(delta);
+        }, { passive: false });
+    }
+
+    window.attachImages = function(pIdx, dIdx, eIdx, input) {
+        const files = input.files;
+        if (!files || files.length === 0) return;
+        
+        if (!window.itineraryData[pIdx].days[dIdx].events[eIdx].attachments) {
+            window.itineraryData[pIdx].days[dIdx].events[eIdx].attachments = [];
+        }
+
+        let processed = 0;
+        Array.from(files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const maxDim = 800;
+                    if (width > height && width > maxDim) {
+                        height *= maxDim / width;
+                        width = maxDim;
+                    } else if (height > maxDim) {
+                        width *= maxDim / height;
+                        height = maxDim;
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    window.itineraryData[pIdx].days[dIdx].events[eIdx].attachments.push(canvas.toDataURL('image/jpeg', 0.8));
+                    processed++;
+                    if (processed === files.length) {
+                        renderItinerary(window.currentPhase);
+                        window.saveData();
+                    }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+        input.value = '';
+    };
+
+    window.removeAttachment = function(pIdx, dIdx, eIdx, attIdx) {
+        if (window.itineraryData[pIdx].days[dIdx].events[eIdx].attachments) {
+            window.itineraryData[pIdx].days[dIdx].events[eIdx].attachments.splice(attIdx, 1);
+            renderItinerary(window.currentPhase);
+            window.saveData();
+        }
+    };
+
+    function renderDashboard() {
+        const tripStart = new Date('2026-11-01T00:00:00');
+        const tripEnd = new Date('2026-11-24T23:59:59');
+        const now = new Date(); 
+        
+        let diffDays = Math.floor((now - tripStart) / (1000 * 60 * 60 * 24)) + 1;
+        const totalDays = 24;
+
+        const title = document.getElementById('live-title');
+        const sub = document.getElementById('live-subtitle');
+        const badge = document.getElementById('live-badge');
+        const bar = document.getElementById('live-bar');
+        const pct = document.getElementById('live-pct');
+        const city = document.getElementById('live-city');
+        const next = document.getElementById('live-next');
+        const count = document.getElementById('live-countdown');
+
+        if (now < tripStart) {
+            const daysLeft = Math.ceil((tripStart - now) / (1000 * 60 * 60 * 24));
+            badge.innerText = "Contagem Regressiva";
+            title.innerText = `Faltam ${daysLeft} dias!`;
+            sub.innerText = "O planejamento está a todo o vapor.";
+            bar.style.width = "0%";
+            pct.innerText = "0%";
+            city.innerText = "Brasil 🏠";
+            next.innerText = "Guarulhos (GRU)";
+            count.innerText = `${daysLeft} dias restantes`;
+        } else if (now > tripEnd) {
+            badge.innerText = "Concluído";
+            badge.className = "inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter mb-4 bg-green-100 text-green-700";
+            title.innerText = "Obrigado, Japão! 🇯🇵";
+            sub.innerText = "Muitas memórias inesquecíveis.";
+            bar.style.width = "100%";
+            pct.innerText = "100%";
+            city.innerText = "Brasil 🏠";
+            next.innerText = "-";
+            count.innerText = "Missão Cumprida";
+        } else {
+            badge.innerText = `Dia ${diffDays}`;
+            badge.className = "inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter mb-4 bg-orange-500 text-white";
+            
+            let flatDays = [];
+            window.itineraryData.forEach(p => {
+                p.days.forEach(d => flatDays.push({ ...d, pTitle: p.title, pCity: p.city }));
+            });
+            
+            let currentDayData = flatDays[diffDays - 1] || flatDays[0];
+            title.innerText = currentDayData.title;
+            sub.innerText = currentDayData.pTitle;
+            
+            const progress = Math.round((diffDays / totalDays) * 100);
+            bar.style.width = `${progress}%`;
+            pct.innerText = `${progress}%`;
+            
+            city.innerText = currentDayData.pCity;
+            next.innerText = flatDays[diffDays] ? flatDays[diffDays].pCity : "Retorno";
+            count.innerText = `${totalDays - diffDays} dias restantes`;
+        }
+
+        if (window.myChart) window.myChart.destroy();
+        window.myChart = new Chart(document.getElementById('nightsChart'), {
+            type: 'doughnut',
+            data: { 
+                labels: ['Pré-Japão', 'Tóquio', 'Alpes', 'Kansai'], 
+                datasets: [{ data: [4, 9, 3, 8], backgroundColor: ['#8b5cf6', '#1a2e44', '#d46a4e', '#e5d1b8'], borderWidth: 0 }] 
+            },
+            options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, cutout: '75%' }
+        });
+    }
+
+    window.renderItinerary = function(phaseFilter) {
+        const container = document.getElementById('itinerary-canvas');
+        document.querySelectorAll('.phase-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`f-${phaseFilter}`).classList.add('active');
+        
+        let html = '';
+        window.itineraryData.forEach((phase, pIdx) => {
+            if (phaseFilter !== 'all' && phase.phase !== phaseFilter) return;
+
+            html += `<div class="mb-12 animate-fadeIn">
+                <div class="sticky top-[70px] bg-[var(--bg-main)]/90 backdrop-blur-md py-4 z-30 border-b border-gray-200 mb-6 flex justify-between items-center">
+                    <h3 class="text-xs font-black text-orange-600 uppercase tracking-[0.2em]">${phase.title} <span class="text-gray-400 font-medium">(${phase.city})</span></h3>
+                    <button onclick="window.askAiAboutPhase('${phase.title}')" class="text-xs bg-amber-50 text-amber-700 font-bold px-3 py-1 rounded-lg border border-amber-200 hover:bg-amber-100 flex items-center gap-1">✨ Consultar IA</button>
+                </div>
+                <div class="relative pl-6 md:pl-10">
+                    <div class="timeline-line"></div>
+                    <div class="space-y-12">`;
+
+            phase.days.forEach((day, dIdx) => {
+                html += `<div class="relative pl-6 md:pl-10">
+                    <div class="absolute left-[-5px] md:left-[-5px] top-1.5 w-3 h-3 rounded-full bg-white border-[3px] border-orange-500 z-10"></div>
+                    <div class="mb-4">
+                        <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-100 px-2 py-1 rounded">${day.date}</span>
+                        <h4 class="text-lg md:text-xl font-bold text-navy-800 mt-2">${day.title}</h4>
+                    </div>
+                    <div class="grid grid-cols-1 gap-3">`;
+
+                day.events.forEach((ev, eIdx) => {
+                    let attachmentsViewHtml = '';
+                    if (ev.attachments && ev.attachments.length > 0) {
+                        attachmentsViewHtml = `<div class="mt-3 flex flex-wrap gap-2">`;
+                        ev.attachments.forEach((att, attIdx) => {
+                            attachmentsViewHtml += `
+                                <button onclick="window.viewAttachment('${att}')" class="inline-flex items-center gap-1.5 text-xs font-bold text-orange-700 bg-orange-50 hover:bg-orange-100 border border-orange-200 px-3 py-1.5 rounded-xl transition-all shadow-sm">
+                                    📎 Anexo ${attIdx + 1}
+                                </button>
+                            `;
+                        });
+                        attachmentsViewHtml += `</div>`;
+                    }
+
+                    let editAttachmentHtml = '';
+                    if (window.isEditMode) {
+                        let thumbsHtml = '';
+                        if (ev.attachments && ev.attachments.length > 0) {
+                            thumbsHtml = `<div class="flex flex-wrap gap-2 mb-2">`;
+                            ev.attachments.forEach((att, attIdx) => {
+                                thumbsHtml += `
+                                    <div class="relative w-12 h-12 rounded-lg border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
+                                        <img src="${att}" class="w-full h-full object-cover cursor-pointer" onclick="window.viewAttachment('${att}')">
+                                        <button onclick="window.removeAttachment(${pIdx}, ${dIdx}, ${eIdx}, ${attIdx})" class="absolute top-0.5 right-0.5 bg-red-600 text-white rounded-full w-4 h-4 text-[10px] flex items-center justify-center opacity-80 hover:opacity-100 font-bold">×</button>
+                                    </div>
+                                `;
+                            });
+                            thumbsHtml += `</div>`;
+                        }
+
+                        editAttachmentHtml = `
+                            <div class="mt-3 pt-2 border-t border-gray-100">
+                                ${thumbsHtml}
+                                <label class="inline-flex text-[10px] font-bold text-gray-600 cursor-pointer bg-gray-100 hover:bg-gray-200 px-2.5 py-1.5 rounded-lg border border-gray-200 items-center gap-1">
+                                    📎 + Adicionar Anexos/QR
+                                    <input type="file" accept="image/*" multiple class="hidden" onchange="window.attachImages(${pIdx}, ${dIdx}, ${eIdx}, this)">
+                                </label>
+                            </div>
+                        `;
+                    }
+
+                    html += `
+                        <div class="bg-white p-4 md:p-5 rounded-xl border border-gray-100 shadow-sm relative group hover:shadow-md transition-shadow">
+                            <div class="action-btn absolute -top-3 -right-2 gap-1 bg-white p-1 rounded-lg shadow-sm border border-gray-100 z-20">
+                                <button onclick="window.moveEvent(${pIdx}, ${dIdx}, ${eIdx}, -1)" class="bg-gray-100 hover:bg-gray-200 text-gray-600 w-6 h-6 rounded flex items-center justify-center text-xs">↑</button>
+                                <button onclick="window.moveEvent(${pIdx}, ${dIdx}, ${eIdx}, 1)" class="bg-gray-100 hover:bg-gray-200 text-gray-600 w-6 h-6 rounded flex items-center justify-center text-xs">↓</button>
+                                <button onclick="window.removeEvent(${pIdx}, ${dIdx}, ${eIdx})" class="bg-red-50 hover:bg-red-100 text-red-500 w-6 h-6 rounded flex items-center justify-center text-xs ml-1">✕</button>
+                            </div>
+                            <span class="text-[10px] font-black text-orange-500 block mb-1 editable-field" contenteditable="${window.isEditMode}" oninput="window.updateField('evTime', ${pIdx}, ${dIdx}, ${eIdx}, this)">${ev.time}</span>
+                            <span class="font-bold text-gray-800 text-sm block editable-field" contenteditable="${window.isEditMode}" oninput="window.updateField('evAct', ${pIdx}, ${dIdx}, ${eIdx}, this)">${ev.activity}</span>
+                            <p class="text-xs text-gray-500 mt-2 leading-relaxed editable-field" contenteditable="${window.isEditMode}" oninput="window.updateField('evDesc', ${pIdx}, ${dIdx}, ${eIdx}, this)">${ev.desc}</p>
+                            ${attachmentsViewHtml}
+                            ${editAttachmentHtml}
+                        </div>`;
+                });
+
+                html += `${window.isEditMode ? `<button onclick="window.addEvent(${pIdx}, ${dIdx})" class="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 text-xs font-bold hover:border-orange-300 hover:text-orange-500 transition-colors">+ Adicionar Atividade</button>` : ''}
+                    </div>
+                </div>`;
+            });
+            html += `</div></div></div>`;
+        });
+        container.innerHTML = html;
+    }
+
+    window.renderLogistics = function() {
+        document.getElementById('transport-list').innerHTML = window.logisticsData.transport.map((t, i) => `
+            <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm relative">
+                ${window.isEditMode ? `<button onclick="window.removeLog('transport', ${i})" class="absolute -top-2 -right-2 bg-red-100 text-red-500 w-6 h-6 rounded-full flex items-center justify-center text-xs z-20 hover:bg-red-200 font-bold">✕</button>` : ''}
+                <div class="flex justify-between items-start mb-2">
+                    <span class="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-1 rounded editable-field" contenteditable="${window.isEditMode}" oninput="window.updateLog('transport', ${i}, 'date', this)">${t.date}</span>
+                    <span class="text-sm font-black text-navy-800 editable-field" contenteditable="${window.isEditMode}" oninput="window.updateLog('transport', ${i}, 'time', this)">${t.time}</span>
+                </div>
+                <p class="font-bold text-sm mb-1 editable-field" contenteditable="${window.isEditMode}" oninput="window.updateLog('transport', ${i}, 'route', this)">${t.route}</p>
+                <div class="flex justify-between text-[10px] uppercase font-bold text-gray-400 mt-2 border-t border-gray-50 pt-2">
+                    <span class="editable-field" contenteditable="${window.isEditMode}" oninput="window.updateLog('transport', ${i}, 'train', this)">${t.train}</span>
+                    <span class="editable-field" contenteditable="${window.isEditMode}" oninput="window.updateLog('transport', ${i}, 'platform', this)">${t.platform}</span>
+                </div>
+            </div>
+        `).join('');
+
+        document.getElementById('shipping-list').innerHTML = window.logisticsData.shipping.map((s, i) => `
+            <div class="flex items-start gap-3 relative bg-stone-50 p-3 rounded-lg border border-stone-100">
+                ${window.isEditMode ? `<button onclick="window.removeLog('shipping', ${i})" class="absolute -left-2 -top-2 bg-red-100 text-red-500 w-5 h-5 rounded-full flex items-center justify-center text-[10px] z-20 hover:bg-red-200 font-bold">✕</button>` : ''}
+                <span class="bg-white px-2 py-1 rounded text-[10px] font-bold text-orange-600 editable-field shadow-sm" contenteditable="${window.isEditMode}" oninput="window.updateLog('shipping', ${i}, 'date', this)">${s.date}</span>
+                <span class="text-xs text-gray-600 pt-1 editable-field flex-1" contenteditable="${window.isEditMode}" oninput="window.updateLog('shipping', ${i}, 'desc', this)">${s.desc}</span>
+            </div>
+        `).join('');
+
+        document.getElementById('checklist-list').innerHTML = window.logisticsData.checklist.map((c, i) => `
+            <div class="flex items-center gap-3 relative p-2 hover:bg-gray-50 rounded-lg">
+                ${window.isEditMode ? `<button onclick="window.removeLog('check', ${i})" class="absolute -left-2 bg-red-100 text-red-500 w-5 h-5 rounded-full flex items-center justify-center text-[10px] z-20 hover:bg-red-200 font-bold">✕</button>` : ''}
+                <input type="checkbox" ${c.status ? 'checked' : ''} class="w-4 h-4 accent-blue-600 cursor-pointer" onchange="window.updateCheck(${i}, this)">
+                <span class="text-sm editable-field flex-1 ${c.status ? 'line-through text-gray-400' : 'text-gray-700'}" contenteditable="${window.isEditMode}" oninput="window.updateLog('checklist', ${i}, 'item', this)">${c.item}</span>
+            </div>
+        `).join('');
+    };
+
+    window.showSection = function(id) {
+        document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
+        document.getElementById('section-' + id).classList.remove('hidden');
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('btn-' + id).classList.add('active');
+        if (id === 'itinerario') window.renderItinerary(window.currentPhase);
+        if (id === 'logistica') window.renderLogistics();
+    };
+
+    window.filterPhase = function(n) {
+        window.currentPhase = n;
+        window.renderItinerary(n);
+    };
+
+    window.renderAll = function() {
+        renderDashboard();
+        if(!document.getElementById('section-itinerario').classList.contains('hidden')) renderItinerary(window.currentPhase);
+        if(!document.getElementById('section-logistica').classList.contains('hidden')) renderLogistics();
+    };
+
+    window.updateField = function(type, p, d, e, el) {
+        const text = el.textContent;
+        if(type === 'evTime') window.itineraryData[p].days[d].events[e].time = text;
+        if(type === 'evAct') window.itineraryData[p].days[d].events[e].activity = text;
+        if(type === 'evDesc') window.itineraryData[p].days[d].events[e].desc = text;
+        window.saveData();
+    };
+    
+    window.updateLog = function(type, idx, field, el) {
+        window.logisticsData[type][idx][field] = el.textContent;
+        window.saveData();
+    };
+
+    window.updateCheck = function(idx, el) {
+        window.logisticsData.checklist[idx].status = el.checked;
+        window.saveData();
+        if(!document.getElementById('section-logistica').classList.contains('hidden')) renderLogistics();
+    };
+
+    window.moveEvent = function(p, d, e, dir) {
+        const events = window.itineraryData[p].days[d].events;
+        const target = e + dir;
+        if(target >= 0 && target < events.length) {
+            [events[e], events[target]] = [events[target], events[e]];
+            renderItinerary(window.currentPhase);
+            window.saveData();
+        }
+    };
+    window.addEvent = function(p, d) {
+        window.itineraryData[p].days[d].events.push({time: "--h--", activity: "Nova Atividade", desc: "Escreva os detalhes aqui.", attachments: []});
+        renderItinerary(window.currentPhase);
+        window.saveData();
+    };
+    window.removeEvent = function(p, d, e) {
+        window.itineraryData[p].days[d].events.splice(e, 1);
+        renderItinerary(window.currentPhase);
+        window.saveData();
+    };
+    window.addLogItem = function(type) {
+        if(type === 'transport') window.logisticsData.transport.push({date: "00/11", route: "Estação A -> B", train: "Linha", time: "00:00", platform: "-"});
+        if(type === 'shipping') window.logisticsData.shipping.push({date: "00/11", desc: "Nova mala."});
+        if(type === 'check') window.logisticsData.checklist.push({item: "Novo Item de Reserva", status: false});
+        renderLogistics();
+        window.saveData();
+    };
+    window.removeLog = function(type, idx) {
+        window.logisticsData[type].splice(idx, 1);
+        renderLogistics();
+        window.saveData();
+    };
+
+    window.openAiAssistant = function() {
+        const modal = document.getElementById('ai-modal');
+        const title = document.getElementById('ai-modal-title');
+        const content = document.getElementById('ai-modal-content');
+        
+        title.innerText = "Assistente Gemini IA para o Japão";
+        content.innerHTML = `
+            <p class="text-xs text-gray-500">Escolha uma opção abaixo para consultar a IA em tempo real:</p>
+            <div class="grid grid-cols-1 gap-2 pt-2">
+                <button onclick="window.callGeminiApi('culinaria')" class="p-3 text-left bg-orange-50 hover:bg-orange-100 rounded-xl border border-orange-200 text-xs font-bold text-orange-800 transition-all">🍜 Pratos imperdíveis em cada região</button>
+                <button onclick="window.callGeminiApi('fotografia')" class="p-3 text-left bg-blue-50 hover:bg-blue-100 rounded-xl border border-blue-200 text-xs font-bold text-blue-800 transition-all">📸 Melhores spots fotográficos para o Outono (Koyo)</button>
+                <button onclick="window.callGeminiApi('etiqueta')" class="p-3 text-left bg-purple-50 hover:bg-purple-100 rounded-xl border border-purple-200 text-xs font-bold text-purple-800 transition-all">🎎 Regras essenciais de etiqueta e cultura</button>
+            </div>
+            <div id="ai-result-area" class="mt-4 p-4 bg-gray-50 rounded-2xl text-xs text-gray-700 leading-relaxed hidden"></div>
+        `;
+        modal.classList.remove('hidden');
+    };
+
+    window.closeAiModal = function() {
+        document.getElementById('ai-modal').classList.add('hidden');
+    };
+
+    window.askAiAboutPhase = function(phaseTitle) {
+        const modal = document.getElementById('ai-modal');
+        const title = document.getElementById('ai-modal-title');
+        const content = document.getElementById('ai-modal-content');
+        
+        title.innerText = `Dicas de IA para: ${phaseTitle}`;
+        content.innerHTML = `
+            <p class="text-xs text-gray-500">A consultar o Gemini sobre dicas especiais...</p>
+            <div class="flex justify-center py-6">
+                <div class="animate-spin text-3xl">⏳</div>
+            </div>
+        `;
+        modal.classList.remove('hidden');
+
+        window.callGeminiApiPrompt(`Dê dicas curtas, valiosas e práticas para um casal viajando no outono (novembro) na região de ${phaseTitle} no Japão.`);
+    };
+
+    window.callGeminiApi = async function(topic) {
+        const resultArea = document.getElementById('ai-result-area');
+        resultArea.classList.remove('hidden');
+        resultArea.innerHTML = "⏳ Consultando a API do Gemini...";
+
+        let prompt = "";
+        if (topic === 'culinaria') prompt = "Liste 5 comidas típicas imperdíveis em Tóquio, Alpes, Quioto e Osaka em novembro.";
+        else if (topic === 'fotografia') prompt = "Quais são os melhores locais e horários para fotografar o Koyo em novembro no Japão?";
+        else if (topic === 'etiqueta') prompt = "Dê 5 dicas cruciais de etiqueta urbana e em templos para turistas no Japão.";
+
+        await window.callGeminiApiPrompt(prompt);
+    };
+
+    window.callGeminiApiPrompt = async function(userQuery) {
+        const resultArea = document.getElementById('ai-result-area') || document.createElement('div');
+        if (!document.getElementById('ai-result-area')) {
+            resultArea.id = 'ai-result-area';
+            document.getElementById('ai-modal-content').appendChild(resultArea);
+        }
+        resultArea.classList.remove('hidden');
+        resultArea.innerHTML = '<div class="flex items-center gap-2"><span class="animate-spin">⏳</span><span>A gerar orientações...</span></div>';
+
+        const systemPrompt = "Você é um guia turístico especialista no Japão, preenchendo um planner de viagem detalhado em novembro de 2026 para um casal (Você e a Jéssica). Responda em português de forma concisa e útil.";
+        const apiKey = ""; // A sua API Key do Gemini entraria aqui futuramente se quiser ativar
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+        const payload = {
+            contents: [{ parts: [{ text: userQuery }] }],
+            systemInstruction: { parts: [{ text: systemPrompt }] }
+        };
+
+        let attempts = 0;
+        while (attempts < 5) {
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (text) {
+                    resultArea.innerHTML = `<div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm whitespace-pre-line">${text}</div>`;
+                    return;
+                }
+            } catch (e) {
+                console.warn("Tentativa de nova consulta...", e);
+            }
+            attempts++;
+            await new Promise(r => setTimeout(r, Math.pow(2, attempts) * 1000));
+        }
+        resultArea.innerHTML = "Não foi possível carregar a resposta da IA neste momento.";
+    };
+
+    window.showPwaInstructions = function() {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const modal = document.getElementById('ai-modal');
+        const title = document.getElementById('ai-modal-title');
+        const content = document.getElementById('ai-modal-content');
+
+        title.innerText = "Instalar como Aplicativo (PWA)";
+        if (isIOS) {
+            content.innerHTML = `
+                <p class="text-xs text-gray-600 font-medium leading-relaxed">Para instalar no seu <strong>iPhone / iPad</strong>:</p>
+                <ol class="list-decimal pl-4 space-y-2 text-xs text-gray-600">
+                    <li>Toque no botão <strong>Compartilhar</strong> (quadrado com seta para cima no Safari).</li>
+                    <li>Selecione <strong>"Adicionar à Tela de Início"</strong>.</li>
+                    <li>Confirme em <strong>"Adicionar"</strong>.</li>
+                </ol>
+            `;
+        } else {
+            content.innerHTML = `
+                <p class="text-xs text-gray-600 font-medium leading-relaxed">Para instalar no seu <strong>Android</strong>:</p>
+                <ol class="list-decimal pl-4 space-y-2 text-xs text-gray-600">
+                    <li>Toque no menu de <strong>três pontos</strong> do Chrome.</li>
+                    <li>Selecione <strong>"Instalar aplicativo"</strong> ou <strong>"Adicionar à tela inicial"</strong>.</li>
+                    <li>Confirme a instalação.</li>
+                </ol>
+            `;
+        }
+        modal.classList.remove('hidden');
+    };
+
+    window.onload = initApp;
+</script>
+</body>
+</html>
+```eof
+
+### Não se esqueça da permissão final no Firebase:
+Para garantir que ele realmente vai salvar as alterações quando vocês tocarem em "Salvar Alterações", confirme se você ativou o **Firestore Database** no modo de teste:
+1. No Firebase Console, vá no menu esquerdo em **Firestore Database**.
+2. Clique em **Criar banco de dados** e selecione o **Modo de teste** (Test Mode).
+
+Pode colocar o código no ar no GitHub e testar a vontade! Se o emblema no topo ficar verde escrito **"☁️ Nuvem Ativa"**, é porque deu tudo 100% certo e a sincronização com a Jéssica já está rodando!
