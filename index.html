@@ -675,7 +675,7 @@
         if (now < tripStart) {
             const daysLeft = Math.ceil((tripStart - now) / (1000 * 60 * 60 * 24));
             badge.innerText = "Contagem Decrescente"; title.innerText = `Faltam ${daysLeft} dias!`;
-            sub.innerText = "O planeamento está a todo o vapor."; bar.style.width = "0%"; pct.innerText = "0%";
+            sub.innerText = "O planejamento está a todo o vapor."; bar.style.width = "0%"; pct.innerText = "0%";
             city.innerText = "Brasil 🏠"; next.innerText = "Guarulhos (GRU)"; count.innerText = `${daysLeft} dias restantes`;
         } else if (now > tripEnd) {
             badge.innerText = "Concluído"; badge.className = "inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter mb-4 bg-green-100 text-green-700";
