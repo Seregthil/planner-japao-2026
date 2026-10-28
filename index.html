@@ -9,7 +9,6 @@
     <meta name="theme-color" content="#4A3525">
     <title>Japão 2026 | Planner Outono Koyo</title>
     
-    <!-- PWA Manifest atualizado com cores de outono -->
     <link rel="manifest" href='data:application/json;charset=utf-8,%7B%22name%22%3A%22Jap%C3%A3o%202026%20Planner%22%2C%22short_name%22%3A%22Jap%C3%A3o%202026%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23FCE8D5%22%2C%22theme_color%22%3A%22%234A3525%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fplacehold.co%2F192x192%2F4A3525%2Fffffff%3Ftext%3D%F0%9F%8D%81%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%7D%2C%7B%22src%22%3A%22https%3A%2F%2Fplacehold.co%2F512x512%2F4A3525%2Fffffff%3Ftext%3D%F0%9F%8D%81%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D'>
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -147,7 +146,7 @@
             <div>
                 <div class="flex items-center gap-2">
                     <h1 class="text-xl font-black tracking-tight uppercase" style="color: var(--accent-wood);">Japão 2026</h1>
-                    <span id="sync-status-badge" class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#F2E0D1] text-[#8C5A46]" title="Status da Nuvem">☁️️ Conectando...</span>
+                    <span id="sync-status-badge" class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#F2E0D1] text-[#8C5A46]" title="Status da Nuvem">☁️ Conectando...</span>
                 </div>
                 <p class="text-[10px] text-[#8C5A46] uppercase tracking-widest font-bold">Você & Jéssica • Planner Outono</p>
             </div>
@@ -230,21 +229,22 @@
         </div>
     </section>
 
+    <!-- Seção Itinerário -->
     <section id="section-itinerario" class="hidden space-y-6">
         <div class="flex flex-col gap-4">
             <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2" id="phase-filters">
-                <!-- Filtros Atualizados para as Fases do Novo Roteiro -->
                 <button onclick="window.filterPhase('all')" class="phase-btn active px-4 py-2 rounded-full border border-[#F5D7C4] bg-white text-xs font-bold transition-all whitespace-nowrap shadow-sm" id="f-all">Ver Tudo</button>
+                <button onclick="window.filterPhase(0)" class="phase-btn px-4 py-2 rounded-full border border-[#F5D7C4] bg-white text-[#8C5A46] text-xs font-bold transition-all whitespace-nowrap hover:bg-[#FFF5EB] shadow-sm" id="f-0">0: Pré-Japão</button>
                 <button onclick="window.filterPhase(1)" class="phase-btn px-4 py-2 rounded-full border border-[#F5D7C4] bg-white text-[#8C5A46] text-xs font-bold transition-all whitespace-nowrap hover:bg-[#FFF5EB] shadow-sm" id="f-1">1: Tóquio (P1)</button>
-                <button onclick="window.filterPhase(2)" class="phase-btn px-4 py-2 rounded-full border border-[#F5D7C4] bg-white text-[#8C5A46] text-xs font-bold transition-all whitespace-nowrap hover:bg-[#FFF5EB] shadow-sm" id="f-2">2: Alpes & Kanazawa</button>
-                <button onclick="window.filterPhase(3)" class="phase-btn px-4 py-2 rounded-full border border-[#F5D7C4] bg-white text-[#8C5A46] text-xs font-bold transition-all whitespace-nowrap hover:bg-[#FFF5EB] shadow-sm" id="f-3">3: Quioto</button>
-                <button onclick="window.filterPhase(4)" class="phase-btn px-4 py-2 rounded-full border border-[#F5D7C4] bg-white text-[#8C5A46] text-xs font-bold transition-all whitespace-nowrap hover:bg-[#FFF5EB] shadow-sm" id="f-4">4: Osaka</button>
-                <button onclick="window.filterPhase(5)" class="phase-btn px-4 py-2 rounded-full border border-[#F5D7C4] bg-white text-[#8C5A46] text-xs font-bold transition-all whitespace-nowrap hover:bg-[#FFF5EB] shadow-sm" id="f-5">5: Tóquio (P2)</button>
+                <button onclick="window.filterPhase(2)" class="phase-btn px-4 py-2 rounded-full border border-[#F5D7C4] bg-white text-[#8C5A46] text-xs font-bold transition-all whitespace-nowrap hover:bg-[#FFF5EB] shadow-sm" id="f-2">2: Alpes</button>
+                <button onclick="window.filterPhase(3)" class="phase-btn px-4 py-2 rounded-full border border-[#F5D7C4] bg-white text-[#8C5A46] text-xs font-bold transition-all whitespace-nowrap hover:bg-[#FFF5EB] shadow-sm" id="f-3">3: Kansai</button>
+                <button onclick="window.filterPhase(4)" class="phase-btn px-4 py-2 rounded-full border border-[#F5D7C4] bg-white text-[#8C5A46] text-xs font-bold transition-all whitespace-nowrap hover:bg-[#FFF5EB] shadow-sm" id="f-4">4: Tóquio (P2)</button>
             </div>
         </div>
         <div id="itinerary-canvas" class="space-y-10"></div>
     </section>
 
+    <!-- Seção Logística -->
     <section id="section-logistica" class="hidden space-y-6">
         <div class="bg-white p-6 md:p-8 rounded-3xl border border-[#F5D7C4] shadow-md">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
@@ -277,7 +277,6 @@
 </main>
 
 <script>
-    // CHAVES DO FIREBASE
     const firebaseConfig = {
         apiKey: "AIzaSyC7loa555YSL3YR8NIAuOduZcxm1DnK4jo",
         authDomain: "planner-japao-2026-422e3.firebaseapp.com",
@@ -291,168 +290,174 @@
     let isCloudSyncActive = false;
     let saveTimeout = null;
 
+    // NOVO ROTEIRO COMPLETAMENTE ATUALIZADO (Até 26/11)
     const defaultItinerary = [
-        { phase: 1, title: "Tóquio (Parte 1) — Asakusa e Região", city: "Tóquio", days: [
-            { date: "05/11", title: "Chegada e Asakusa", events: [
-                { time: "05h05", activity: "Chegada a Haneda", desc: "Imigração, malas e deslocamento de Haneda para Kuramae. Deixar bagagem no Tosei Hotel Cocone Asakusa Kuramae.", attachments: [] },
-                { time: "Tarde", activity: "Asakusa a pé", desc: "Kaminarimon, Nakamise-dori, Senso-ji. Asakusa Culture Tourist Info Center (vista 8º andar) e margem do Rio Sumida.", attachments: [] },
-                { time: "Almoço", activity: "Almoço em Asakusa", desc: "Refeição local.", attachments: [] },
-                { time: "Meio Tarde", activity: "Check-in e Descanso", desc: "Retorno ao hotel, banho e 1-2h de ajuste de jet lag.", attachments: [] },
-                { time: "Noite", activity: "Jantar Leve", desc: "Sugestão: Perfect Beer Kitchen Kuramae.", attachments: [] }
+        { phase: 0, title: "A Preparação no Brasil", city: "Brasil", days: [
+            { date: "01/11 a 03/11", title: "Início dos Preparativos", events: [{ time: "Dia", activity: "Arrumar Malas e Documentos", desc: "Separar roupas de frio, passaportes e ativar cartões Wise/Nomad.", attachments: [] }] },
+            { date: "04/11", title: "Voo Internacional", events: [{ time: "Manhã", activity: "Check-in Aeroporto GRU", desc: "Despacho de malas e embarque rumo ao Japão!", attachments: [] }] }
+        ]},
+        { phase: 1, title: "Tóquio Leste (Parte 1)", city: "Tóquio", days: [
+            { date: "05/11", title: "A Chegada e Asakusa", events: [
+                { time: "05h05", activity: "Chegada a Haneda", desc: "Imigração, retirada das malas e alfândega.", attachments: [] },
+                { time: "Manhã", activity: "Deslocamento", desc: "Trem Keikyu/Toei Asakusa para Kuramae (Saída A0 com elevador). Deixar malas no Tosei Hotel Cocone.", attachments: [] },
+                { time: "Tarde", activity: "Asakusa a pé", desc: "Kaminarimon, Nakamise-dori, Senso-ji e margem do Rio Sumida. Mirante gratuito do Asakusa Culture Tourist Info Center.", attachments: [] },
+                { time: "Almoço", activity: "Refeição em Asakusa", desc: "Almoço flexível na região.", attachments: [] },
+                { time: "15h00", activity: "Check-in e Descanso", desc: "Check-in no hotel, banho e 1-2h de ajuste de jet lag.", attachments: [] },
+                { time: "Noite", activity: "Jantar Leve", desc: "Jantar em Kuramae/Asakusa. Sugestão: Perfect Beer Kitchen Kuramae.", attachments: [] }
             ]},
-            { date: "06/11", title: "Tsukiji, Compras Ginza e teamLAB", events: [
-                { time: "08h30", activity: "Tsukiji Outer Market", desc: "Café da manhã/brunch e degustação de comidas de rua (~1h30).", attachments: [] },
-                { time: "10h30", activity: "Compras Yurakucho & Ginza", desc: "Eletrônicos na Bic Camera Yurakucho. Roupas no Marronnier Gate Ginza 2 (Uniqlo Tokyo, GU, Daiso). Almoço na região.", attachments: [] },
-                { time: "16h30", activity: "teamLAB Borderless", desc: "Azabudai Hills (duração ~2h). Requer reserva prévia.", attachments: [] },
-                { time: "Noite", activity: "Tokyo Tower e Jantar", desc: "Explorar Azabudai, caminhada até a Tokyo Tower (vista externa) e jantar.", attachments: [] }
+            { date: "06/11", title: "teamLab, Ginza e Yurakucho", events: [
+                { time: "07h30", activity: "Café da manhã", desc: "No próprio hotel (Tosei).", attachments: [] },
+                { time: "11h00", activity: "teamLab Borderless (COMPRADO)", desc: "Complexo Azabudai Hills (verificar horário exato no comprovante). Duração ~2h30.", attachments: [] },
+                { time: "Almoço", activity: "Almoço em Azabudai/Ginza", desc: "Passeio curto por Azabudai e vista externa da Tokyo Tower.", attachments: [] },
+                { time: "14h00", activity: "Compras em Ginza/Yurakucho", desc: "Bloco principal de compras funcionais: Bic Camera, Uniqlo Tokyo, GU e Daiso.", attachments: [] },
+                { time: "Noite", activity: "Retorno a Kuramae", desc: "Jantar na região e volta direta ao hotel para deixar as compras.", attachments: [] }
             ]},
-            { date: "07/11", title: "Yanaka, Ueno, Ameyoko e Akihabara", events: [
-                { time: "09h30", activity: "Yanaka", desc: "Roteiro compacto: cemitério, ruas tradicionais, Yuyake Dandan e Yanaka Ginza (~1h30).", attachments: [] },
-                { time: "11h15", activity: "Ueno", desc: "Caminhada pelo Ueno Park e Shinobazu Pond.", attachments: [] },
-                { time: "12h30", activity: "Ameyoko", desc: "Rua comercial popular, street food e almoço.", attachments: [] },
-                { time: "14h00", activity: "Akihabara", desc: "Cultura otaku, eletrônicos, gachapon, arcades. Opcional: Kanda Myojin.", attachments: [] },
+            { date: "07/11", title: "Yanaka, Ueno e Akihabara", events: [
+                { time: "09h30", activity: "Yanaka", desc: "Cemitério, ruas tradicionais, Yuyake Dandan e Yanaka Ginza.", attachments: [] },
+                { time: "11h15", activity: "Parque Ueno", desc: "Caminhada pelo Ueno Park e Shinobazu Pond.", attachments: [] },
+                { time: "12h30", activity: "Ameyoko", desc: "Comércio popular, degustações e almoço.", attachments: [] },
+                { time: "14h00", activity: "Akihabara", desc: "Animes, videogames, gachapon e arcades.", attachments: [] },
                 { time: "Noite", activity: "Jantar", desc: "Em Akihabara, Asakusa ou próximo ao hotel.", attachments: [] }
             ]},
-            { date: "08/11", title: "Dia Flexível (Plano B: Fuji)", events: [
-                { time: "Manhã", activity: "Tokyo Station & Marunouchi", desc: "Fachada histórica e área externa do Palácio Imperial (Plano A).", attachments: [] },
-                { time: "Tarde", activity: "Programação Livre", desc: "Nihonbashi, Ginza pendente, Kappabashi ou passeios espontâneos.", attachments: [] },
-                { time: "Nota", activity: "Clima", desc: "Se o tempo para o Fuji estiver melhor hoje, fazer o tour hoje e mover este dia para 09/11.", attachments: [] }
+            { date: "08/11", title: "Dia Flexível (ou Plano Fuji)", events: [
+                { time: "Dia", activity: "Programação Flexível", desc: "PLANO A: Tokyo Station, Marunouchi e exterior do Palácio Imperial. PLANO B: Se o clima estiver melhor para o Fuji, fazer o tour hoje.", attachments: [] }
             ]},
             { date: "09/11", title: "Bate-volta Monte Fuji", events: [
-                { time: "Dia Todo", activity: "Tour Monte Fuji", desc: "Tour reservado (avaliar clima entre dias 08 e 09).", attachments: [] },
-                { time: "Noite", activity: "Organização Logística", desc: "Jantar perto do hotel. Despachar malas grandes para Kanazawa e preparar mochila/carry-on para os Alpes.", attachments: [] }
+                { time: "Dia Inteiro", activity: "Tour Monte Fuji", desc: "Tour reservado (avaliar clima entre 05-06/11 para decidir se mantém no dia 09 ou move para 08).", attachments: [] },
+                { time: "Noite", activity: "Organização Logística", desc: "Despachar malas grandes para Kanazawa e preparar mochila/mala pequena para a ida aos Alpes amanhã.", attachments: [] }
             ]}
         ]},
-        { phase: 2, title: "Alpes Japoneses + Kanazawa", city: "Takayama/Kanazawa", days: [
+        { phase: 2, title: "Alpes Japoneses e Kanazawa", city: "Takayama/Kanazawa", days: [
             { date: "10/11", title: "Tóquio → Takayama", events: [
-                { time: "06h48", activity: "Deslocamento aos Alpes", desc: "Tokyo -> Nagoya -> Takayama. Deixar bagagem no Takayama Ouan.", attachments: [] },
-                { time: "Manhã", activity: "Takayama Jinya", desc: "Sede administrativa histórica (prioridade alta).", attachments: [] },
-                { time: "Almoço", activity: "Hida Beef", desc: "Refeição especial dedicada à famosa carne da região.", attachments: [] },
-                { time: "Tarde", activity: "Sanmachi (Old Town)", desc: "Passeio por Sanmachi Suji, Nakabashi. Degustação informal em cervejarias de Sake.", attachments: [] },
-                { time: "Noite", activity: "Onsen e Descanso", desc: "Check-in no Takayama Ouan, jantar leve e banho termal.", attachments: [] }
+                { time: "06h48", activity: "Deslocamento aos Alpes", desc: "Tokyo -> Nagoya (08h25) -> Limited Express Hida 3 para Takayama (10h58).", attachments: [] },
+                { time: "11h00", activity: "Chegada a Takayama", desc: "Deixar bagagem no Takayama Ouan.", attachments: [] },
+                { time: "Fim Manhã", activity: "Takayama Jinya", desc: "Sede administrativa histórica (prioridade alta, fecha cedo).", attachments: [] },
+                { time: "Almoço", activity: "Hida Beef", desc: "Refeição especial focada na carne da região.", attachments: [] },
+                { time: "Tarde", activity: "Sanmachi (Old Town)", desc: "Ruas de madeira, casas comerciais e degustação informal de sake.", attachments: [] },
+                { time: "Noite", activity: "Onsen e Descanso", desc: "Check-in no Takayama Ouan, onsen e jantar regional.", attachments: [] }
             ]},
             { date: "11/11", title: "Takayama, Shirakawa-go e Kanazawa", events: [
-                { time: "07h15", activity: "Miyagawa Morning Market", desc: "Mercado matinal, seguido de café da manhã e check-out.", attachments: [] },
-                { time: "09h35", activity: "Ônibus para Shirakawa-go", desc: "Trajeto rodoviário reservado.", attachments: [] },
-                { time: "10h25", activity: "Exploração Shirakawa-go", desc: "Observatório Ogimachi (subir de shuttle), Wada House, caminhada na vila e almoço.", attachments: [] },
-                { time: "13h50", activity: "Ônibus para Kanazawa", desc: "Embarque para Kanazawa.", attachments: [] },
-                { time: "Tarde/Noite", activity: "Chegada em Kanazawa", desc: "Check-in no Four Points Flex. Passeio leve opcional e jantar regional.", attachments: [] }
+                { time: "07h15", activity: "Miyagawa Morning Market", desc: "Lanche local e caminhada. Depois, check-out.", attachments: [] },
+                { time: "09h35", activity: "Ônibus para Shirakawa-go", desc: "Trajeto rodoviário reservado (chegada 10h25).", attachments: [] },
+                { time: "10h25", activity: "Exploração Shirakawa-go", desc: "Observatório Ogimachi (subir de shuttle), Wada House, aldeia e almoço simples.", attachments: [] },
+                { time: "13h50", activity: "Ônibus para Kanazawa", desc: "Retorno ao terminal 13h25 e embarque (chegada 15h05).", attachments: [] },
+                { time: "Tarde/Noite", activity: "Chegada em Kanazawa", desc: "Check-in no Four Points Flex. Jantar regional (frutos do mar, Kanazawa oden).", attachments: [] }
             ]},
             { date: "12/11", title: "Kanazawa (Dia Completo)", events: [
-                { time: "08h30", activity: "Omicho Market", desc: "Mercado de peixes e degustações matinais.", attachments: [] },
-                { time: "10h00", activity: "Higashi Chaya & Kazue-machi", desc: "Ruas históricas e Shima House.", attachments: [] },
-                { time: "11h45", activity: "Kenrokuen Garden", desc: "Jardins, lagos e pontes (~1h45).", attachments: [] },
-                { time: "13h15", activity: "Kanazawa Castle Park", desc: "Muralhas, Ishikawa-mon e jardins. Almoço na região.", attachments: [] },
-                { time: "14h45", activity: "Nagamachi Samurai District", desc: "Ruas históricas. Opcional: Nomura House.", attachments: [] },
-                { time: "15h00", activity: "Myōryū-ji (Ninja Temple)", desc: "Visita guiada (reserva prévia) e caminhada em Nishi Chaya.", attachments: [] }
+                { time: "08h30", activity: "Omicho Market", desc: "Mercado de peixes e passeio gastronômico matinal.", attachments: [] },
+                { time: "10h00", activity: "Higashi Chaya", desc: "Ruas históricas e visita à Shima House.", attachments: [] },
+                { time: "11h45", activity: "Kenrokuen Garden", desc: "Jardins, lagos, pontes e yukitsuri.", attachments: [] },
+                { time: "13h15", activity: "Kanazawa Castle Park", desc: "Muralhas e jardins do castelo. Almoço na região.", attachments: [] },
+                { time: "Tarde", activity: "Nagamachi Samurai District", desc: "Canais e muros de antigos samurais.", attachments: [] },
+                { time: "15h00", activity: "Myōryū-ji (Ninja Temple)", desc: "Visita guiada ao templo com passagens secretas (requer reserva).", attachments: [] }
             ]}
         ]},
-        { phase: 3, title: "Quioto", city: "Quioto", days: [
-            { date: "13/11", title: "Kanazawa → Quioto + Nishiki", events: [
-                { time: "Manhã", activity: "Deslocamento", desc: "Check-out e trem via Tsuruga para Quioto. Deixar malas no M’s Hotel Sanjo Wakoku.", attachments: [] },
-                { time: "Tarde", activity: "Nishiki Market", desc: "Explorar o mercado com calma, almoçar street food e caminhar por Teramachi/Shinkyogoku.", attachments: [] },
-                { time: "Noite", activity: "Pontocho Alley", desc: "Passeio por Kawaramachi, Rio Kamo e jantar em Pontocho.", attachments: [] }
+        { phase: 3, title: "Kansai Tradicional (Kyoto/Osaka)", city: "Quioto/Osaka", days: [
+            { date: "13/11", title: "Kanazawa → Quioto", events: [
+                { time: "Manhã", activity: "Deslocamento para Quioto", desc: "Trem via Tsuruga para Quioto. Deixar malas no M’s Hotel Sanjo Wakoku.", attachments: [] },
+                { time: "Tarde", activity: "Nishiki Market", desc: "Explorar mercado para almoço, e caminhar por Teramachi/Shinkyogoku.", attachments: [] },
+                { time: "Fim Tarde", activity: "Rio Kamo", desc: "Passeio por Kawaramachi e margens do rio.", attachments: [] },
+                { time: "Noite", activity: "Pontocho Alley", desc: "Caminhada noturna e jantar na região.", attachments: [] }
             ]},
             { date: "14/11", title: "Fushimi Inari e Tarde Livre", events: [
-                { time: "07h00", activity: "Fushimi Inari Taisha", desc: "Chegar cedo via linha Keihan. Percurso pelos Senbon Torii e subida parcial.", attachments: [] },
-                { time: "Meio Manhã", activity: "Tofuku-ji (Condicional)", desc: "Visitar apenas se o koyo (folhas de outono) estiver bonito.", attachments: [] },
-                { time: "Tarde", activity: "Tarde Livre", desc: "Descanso, cafés e compras na região de Kawaramachi/Gion.", attachments: [] },
-                { time: "Noite", activity: "Iluminação de Outono", desc: "Opcional: To-ji ou Kitano Tenmangu, dependendo da coloração.", attachments: [] }
+                { time: "07h00", activity: "Fushimi Inari Taisha", desc: "Chegar cedo via linha Keihan. Senbon Torii e subida parcial.", attachments: [] },
+                { time: "Meio Manhã", activity: "Tofuku-ji (Condicional)", desc: "Visitar somente se as folhas (koyo) estiverem bonitas.", attachments: [] },
+                { time: "Tarde", activity: "Tempo Livre", desc: "Descanso, cafés e passeios espontâneos por Gion/Kawaramachi.", attachments: [] }
             ]},
-            { date: "15/11", title: "Bate-volta Nara", events: [
+            { date: "15/11", title: "Bate-volta Nara (Shichi-Go-San)", events: [
                 { time: "08h30", activity: "Deslocamento", desc: "Saída de Quioto rumo a Nara.", attachments: [] },
-                { time: "10h00", activity: "Nara Park & Todai-ji", desc: "Contato com cervos, Grande Buda e almoço local.", attachments: [] },
-                { time: "Tarde", activity: "Opção Histórica ou Tranquila", desc: "Nigatsu-do e Kasuga Taisha OU passeio sem pressa por Naramachi.", attachments: [] },
-                { time: "Noite", activity: "Retorno a Quioto", desc: "Noite livre.", attachments: [] }
+                { time: "10h00", activity: "Nara Park & Todai-ji", desc: "Cervos e o Grande Buda. Almoço em Nara.", attachments: [] },
+                { time: "Tarde", activity: "Kasuga Taisha (Preferencial)", desc: "Visitar o santuário para possível observação da data tradicional do Shichi-Go-San (crianças em trajes tradicionais).", attachments: [] },
+                { time: "Fim Tarde", activity: "Retorno a Quioto", desc: "Noite livre em Quioto.", attachments: [] }
             ]},
             { date: "16/11", title: "Arashiyama e Kinkaku-ji", events: [
-                { time: "Manhã", activity: "Arashiyama", desc: "Tenryu-ji, Bamboo Grove, Jojakko-ji/Okochi Sanso e Togetsukyo Bridge. Almoço na área.", attachments: [] },
-                { time: "Tarde", activity: "Kinkaku-ji", desc: "Visita ao icônico Pavilhão Dourado.", attachments: [] },
-                { time: "Noite", activity: "Descanso", desc: "Retorno ao hotel e jantar tranquilo.", attachments: [] }
+                { time: "Manhã", activity: "Arashiyama", desc: "Tenryu-ji, Bamboo Grove, Jojakko-ji e Ponte Togetsukyo. Almoço na região.", attachments: [] },
+                { time: "Tarde", activity: "Kinkaku-ji", desc: "O icônico Pavilhão Dourado.", attachments: [] },
+                { time: "Noite", activity: "Retorno", desc: "Descanso e jantar. (Não forçar Ryoan-ji hoje).", attachments: [] }
             ]},
             { date: "17/11", title: "Higashiyama e Cerimônia do Chá", events: [
-                { time: "07h30", activity: "Roteiro Histórico a Pé", desc: "Kiyomizu-dera, Sannenzaka, Ninenzaka, Yasaka Pagoda, Higashiyama, Yasaka-jinja e Gion.", attachments: [] },
-                { time: "12h30", activity: "Cerimônia do Chá", desc: "Tea Ceremony Ju-An (reservada no Jotoku-ji), seguida de almoço tardio.", attachments: [] },
-                { time: "Tarde", activity: "Bloco Flexível", desc: "Opção A: Nanzen-ji + Eikando. Opção B: Ginkaku-ji. Opção C: Livre em Gion.", attachments: [] },
-                { time: "Noite", activity: "Despedida", desc: "Jantar especial de despedida de Quioto.", attachments: [] }
-            ]}
-        ]},
-        { phase: 4, title: "Osaka", city: "Osaka", days: [
-            { date: "18/11", title: "Yamazaki → Osaka e Dotonbori", events: [
-                { time: "11h20", activity: "Suntory Yamazaki Distillery", desc: "Tour confirmado. Loja e tasting lounge.", attachments: [] },
-                { time: "Tarde", activity: "Check-in Osaka", desc: "Deslocamento, check-in no Smile Hotel Premium Higashishinsaibashi e descanso.", attachments: [] },
-                { time: "17h30", activity: "Shinsaibashi & Midosuji", desc: "Caminhada e trecho iluminado da Midosuji.", attachments: [] },
-                { time: "Noite", activity: "Dotonbori & Hozenji", desc: "Glico, canal, letreiros, vielas históricas e Izakaya Hopping na região.", attachments: [] }
+                { time: "07h30", activity: "Roteiro Histórico a Pé", desc: "Kiyomizu-dera, Sannenzaka, Ninenzaka, Yasaka Pagoda e Gion.", attachments: [] },
+                { time: "12h30", activity: "Cerimônia do Chá (Ju-An)", desc: "RESERVADA. Experiência no Jotoku-ji seguida de almoço tardio.", attachments: [] },
+                { time: "Tarde", activity: "Escolha Flexível", desc: "A: Nanzen-ji + Eikan-do. B: Ginkaku-ji. C: Descanso em Gion.", attachments: [] },
+                { time: "Noite", activity: "Despedida de Quioto", desc: "Jantar especial. Bar Tasogare opcional para drinks.", attachments: [] }
             ]},
-            { date: "19/11", title: "Castelo, Nakanoshima e Umeda", events: [
-                { time: "09h30", activity: "Osaka Castle", desc: "Parque, fossos, muralhas e exterior do castelo. Almoço na região.", attachments: [] },
-                { time: "13h00", activity: "Nakanoshima Museum of Art", desc: "Exposição do British Museum (arte japonesa).", attachments: [] },
-                { time: "15h00", activity: "Nakanoshima & Kitahama", desc: "Arquitetura histórica e cafés à beira-rio.", attachments: [] },
-                { time: "16h00", activity: "Umeda", desc: "Explorar Osaka Station e Grand Front Osaka.", attachments: [] },
-                { time: "18h30", activity: "Noite em Tenma", desc: "Izakaya hopping por pequenos bares e tachinomi.", attachments: [] }
+            { date: "18/11", title: "Yamazaki → Osaka e Dotonbori", events: [
+                { time: "11h20", activity: "Suntory Yamazaki Distillery", desc: "CONFIRMADA. Chegar com antecedência, loja e tasting lounge.", attachments: [] },
+                { time: "Tarde", activity: "Check-in Osaka", desc: "Deslocamento, check-in no Smile Hotel Premium Higashishinsaibashi e descanso.", attachments: [] },
+                { time: "17h30", activity: "Shinsaibashi", desc: "Caminhada e trecho iluminado da Midosuji Illumination.", attachments: [] },
+                { time: "Noite", activity: "Dotonbori & Hozenji", desc: "Letreiros, Glico, canal, Templo Hozenji coberto de musgo e Izakaya hopping.", attachments: [] }
+            ]},
+            { date: "19/11", title: "Osaka Castle, Nakanoshima e Umeda", events: [
+                { time: "09h30", activity: "Osaka Castle", desc: "Parque, fossos, muralhas e exterior. Almoço na região.", attachments: [] },
+                { time: "13h00", activity: "Nakanoshima Museum of Art", desc: "Exposição de arte japonesa da coleção do British Museum.", attachments: [] },
+                { time: "16h00", activity: "Umeda (PRIORIDADE)", desc: "Pokémon Center Osaka e Nintendo OSAKA (LUCUA 13º andar).", attachments: [] },
+                { time: "18h30", activity: "Noite em Tenma", desc: "Tour gastronômico ou bar hopping livre por izakayas e tachinomi.", attachments: [] }
             ]},
             { date: "20/11", title: "Namba Yasaka, Shinsekai e Massagem", events: [
-                { time: "09h30", activity: "Kuromon Market (Opcional)", desc: "Visita rápida para pequenas degustações.", attachments: [] },
-                { time: "10h45", activity: "Namba Yasaka Shrine", desc: "Templo da cabeça de leão gigante.", attachments: [] },
+                { time: "10h45", activity: "Namba Yasaka Shrine", desc: "Salão em formato de cabeça de leão.", attachments: [] },
                 { time: "13h30", activity: "Shinsekai", desc: "Ruas retrô, Janjan Yokocho e degustação de kushikatsu (almoço).", attachments: [] },
-                { time: "16h30", activity: "Massagem Japonesa", desc: "Sessão de shiatsu/seitai para recuperação física.", attachments: [] },
-                { time: "Noite", activity: "Ura-Namba", desc: "Despedida de Osaka: Izakaya hopping, yakitori e atmosfera local.", attachments: [] }
+                { time: "16h30", activity: "Massagem Japonesa", desc: "Sessão de shiatsu/seitai para recuperação física perto do hotel.", attachments: [] },
+                { time: "Noite", activity: "Ura-Namba", desc: "Despedida de Osaka: Izakaya hopping, yakitori e atmosfera local.", attachments: [] },
+                { time: "Alternativa", activity: "Aquário (Opcional)", desc: "Se preferir ir ao Kaiyukan hoje cedo, cortar Kuromon e Namba Yasaka.", attachments: [] }
             ]}
         ]},
-        { phase: 5, title: "Tóquio (Parte 2) — Yotsuya e Shinjuku", city: "Tóquio", days: [
-            { date: "21/11", title: "Retorno, Shinjuku Gyoen", events: [
-                { time: "08h00", activity: "Shinkansen para Tóquio", desc: "Check-out e deslocamento. Deixar malas no KOKO Hotel Shinjuku Yotsuya.", attachments: [] },
-                { time: "12h30", activity: "Shinjuku Gyoen", desc: "Prioridade para ver as folhas de outono no parque.", attachments: [] },
-                { time: "15h30", activity: "Observatório Shinjuku", desc: "Área dos arranha-céus e vista gratuita do Tokyo Metropolitan Government Building.", attachments: [] },
+        { phase: 4, title: "Tóquio (Parte 2)", city: "Tóquio", days: [
+            { date: "21/11", title: "Osaka → Tóquio e Shinjuku", events: [
+                { time: "08h00", activity: "Shinkansen para Tóquio", desc: "Check-out precoce e deslocamento. Chegada a Tóquio ~11h.", attachments: [] },
+                { time: "Meio-Dia", activity: "Check-in Shinjuku", desc: "Deixar malas no KOKO Hotel Shinjuku Yotsuya.", attachments: [] },
+                { time: "12h30", activity: "Shinjuku Gyoen", desc: "Prioridade para ver as folhas de outono no jardim.", attachments: [] },
+                { time: "15h30", activity: "Arranha-céus", desc: "Região de Shinjuku (observatório gratuito opcional do Gov. Metropolitano).", attachments: [] },
                 { time: "Noite", activity: "Shinjuku Noturno", desc: "Omoide Yokocho, Kabukicho, Godzilla Road e Golden Gai.", attachments: [] }
             ]},
             { date: "22/11", title: "Meiji Jingu, Omotesando e Shibuya", events: [
-                { time: "08h00", activity: "Meiji Jingu", desc: "Visita tranquila e área arborizada.", attachments: [] },
-                { time: "10h00", activity: "Harajuku & Omotesando", desc: "Takeshita-dori, Cat Street, arquitetura e almoço.", attachments: [] },
+                { time: "08h00", activity: "Meiji Jingu", desc: "Visita tranquila ao santuário e floresta urbana.", attachments: [] },
+                { time: "10h00", activity: "Harajuku & Omotesando", desc: "Takeshita-dori (rápida), Cat Street, arquitetura e almoço.", attachments: [] },
                 { time: "Tarde", activity: "Shibuya", desc: "Hachiko, Scramble Crossing, Shibuya PARCO e Miyashita Park.", attachments: [] },
-                { time: "15h30", activity: "Shibuya Sky", desc: "Aproveitar transição de luz, pôr do sol e noite (requer reserva).", attachments: [] },
-                { time: "Noite", activity: "Jantar em Shibuya", desc: "Caminhada e refeição.", attachments: [] }
+                { time: "15h30", activity: "Shibuya Sky", desc: "Focar na luz do dia, pôr do sol e blue hour. (Monitorar compra de ingressos).", attachments: [] },
+                { time: "Noite", activity: "Jantar em Shibuya", desc: "Refeição na região.", attachments: [] }
             ]},
             { date: "23/11", title: "Kichijoji e Shimokitazawa (Feriado)", events: [
-                { time: "Manhã", activity: "Kichijoji & Inokashira Park", desc: "Caminhada, lojas e parque. Almoço na região.", attachments: [] },
-                { time: "Tarde", activity: "Shimokitazawa", desc: "Lojas vintage e exploração sem pressa.", attachments: [] },
-                { time: "Nota", activity: "Feriado", desc: "Dia do Trabalhador. Programações podem ser ajustadas para descanso ou compras.", attachments: [] }
+                { time: "Manhã", activity: "Kichijoji & Inokashira Park", desc: "Caminhada, lojas, cafés e parque. Almoço na região.", attachments: [] },
+                { time: "Tarde", activity: "Shimokitazawa", desc: "Lojas vintage, ruas de bairro e cafés.", attachments: [] },
+                { time: "Noite", activity: "Noite Livre", desc: "Dia flexível para descanso e compras pendentes.", attachments: [] }
             ]},
-            { date: "24/11", title: "Ginkgos, Compras Finais e Despedida", events: [
-                { time: "Manhã Cedo", activity: "Meiji Jingu Gaien", desc: "Avenida dos Ginkgos para apreciar o amarelo outonal.", attachments: [] },
-                { time: "Tarde", activity: "Compras Finais Shinjuku", desc: "Loft, Hands, Don Quijote, cosméticos e lembranças.", attachments: [] },
-                { time: "Noite", activity: "Jantar Especial", desc: "Despedida da viagem e organização das malas no hotel.", attachments: [] }
+            { date: "24/11", title: "Dia Bate-volta Opcional", events: [
+                { time: "Manhã/Tarde", activity: "Escolher um destino", desc: "Opção A: Kamakura + Enoshima. Opção B: Monte Takao (se o Koyo estiver ótimo). Opção C: Ficar em Tóquio se houver cansaço.", attachments: [] },
+                { time: "Noite", activity: "Marunouchi Illumination", desc: "Avenida iluminada na região da Tokyo Station e jantar.", attachments: [] }
             ]},
-            { date: "25/11", title: "O Até Logo", events: [
-                { time: "Manhã", activity: "Check-out", desc: "Organização final das malas no KOKO Hotel Shinjuku Yotsuya.", attachments: [] },
-                { time: "13h00", activity: "Narita Express", desc: "Deslocamento para NRT com margem de segurança.", attachments: [] },
-                { time: "16h55", activity: "Voo de Volta", desc: "Embarque internacional Narita → Doha.", attachments: [] }
+            { date: "25/11", title: "Ginkgos, Compras Finais e Rikugien", events: [
+                { time: "Manhã Cedo", activity: "Meiji Jingu Gaien", desc: "Avenida dos Ginkgos (melhor janela do amarelo no fim de novembro).", attachments: [] },
+                { time: "Tarde", activity: "Compras Finais Shinjuku", desc: "Don Quijote, Loft, eletrônicos e embalar presentes.", attachments: [] },
+                { time: "Fim Tarde", activity: "Rikugien", desc: "Iluminação especial de outono nos jardins (se disponível).", attachments: [] },
+                { time: "Noite", activity: "Jantar de Despedida", desc: "Organizar as malas e preparar pesagem para o voo.", attachments: [] }
+            ]},
+            { date: "26/11", title: "O Até Logo (Voo de Retorno)", events: [
+                { time: "Manhã", activity: "Check-out", desc: "Café da manhã fora, check-out no KOKO Hotel e conferência de documentos.", attachments: [] },
+                { time: "13h00", activity: "Deslocamento a Narita", desc: "Chegar ao aeroporto via Narita Express com margem de segurança para Tax-free.", attachments: [] },
+                { time: "16h55", activity: "Voo Internacional", desc: "Embarque Narita → Doha.", attachments: [] }
             ]}
         ]}
     ];
 
     const defaultLogistics = {
         transport: [
-            { date: "05/11", route: "Haneda -> Kuramae", train: "Trem/Metrô", time: "Manhã", platform: "HND" },
-            { date: "10/11", route: "Tokyo -> Nagoya", train: "Shinkansen", time: "06:48", platform: "Tokyo Sta" },
-            { date: "10/11", route: "Nagoya -> Takayama", train: "L.E. Hida 3", time: "08:43", platform: "Nagoya Sta" },
-            { date: "11/11", route: "Takayama -> Shirakawa-go", train: "Ônibus", time: "09:35", platform: "Bus Terminal" },
-            { date: "11/11", route: "Shirakawa-go -> Kanazawa", train: "Ônibus", time: "13:50", platform: "Shirakawa-go" },
-            { date: "13/11", route: "Kanazawa -> Kyoto", train: "Via Tsuruga", time: "Manhã", platform: "Kanazawa Sta" },
-            { date: "18/11", route: "Kyoto -> Yamazaki -> Osaka", train: "Trem Local", time: "Manhã", platform: "Kyoto Sta" },
-            { date: "21/11", route: "Osaka -> Tokyo", train: "Shinkansen", time: "08:00", platform: "Shin-Osaka" },
-            { date: "25/11", route: "Yotsuya -> Narita", train: "NEX", time: "13:00", platform: "Tokyo/Shinjuku" }
+            { date: "05/11", route: "Haneda -> Kuramae", train: "Keikyu / Toei", time: "06:30", platform: "HND" },
+            { date: "10/11", route: "Tokyo -> Nagoya -> Takayama", train: "Shinkansen+Hida 3", time: "06:48", platform: "Tokyo Sta" },
+            { date: "11/11", route: "Takayama -> Shirakawa-go", train: "Ônibus", time: "09:35", platform: "Takayama Bus" },
+            { date: "13/11", route: "Kanazawa -> Quioto", train: "Via Tsuruga", time: "Manhã", platform: "Kanazawa Sta" },
+            { date: "21/11", route: "Shin-Osaka -> Tóquio", train: "Shinkansen", time: "08:00", platform: "Shin-Osaka" },
+            { date: "26/11", route: "Shinjuku -> Narita", train: "Narita Express", time: "12:00", platform: "Shinjuku" }
         ],
         shipping: [
-            { date: "09/11", desc: "Tóquio ➔ Kanazawa (Despachar malas grandes)" }
+            { date: "09/11", desc: "Tóquio ➔ Kanazawa (Despachar malas grandes)" },
+            { date: "21/11", desc: "Osaka ➔ Tóquio (Avaliar necessidade)" }
         ],
         checklist: [
-            { item: "teamLAB Borderless (06/11)", status: false },
-            { item: "Tour Monte Fuji (09/11)", status: false },
-            { item: "Ônibus Shirakawa-go (11/11)", status: false },
+            { item: "teamLab Borderless (06/11)", status: true },
             { item: "Tea Ceremony Ju-An (17/11)", status: true },
             { item: "Suntory Yamazaki (18/11)", status: true },
-            { item: "Shibuya Sky (22/11)", status: false }
+            { item: "Seguro Viagem estendido p/ 26/11", status: false },
+            { item: "Shibuya Sky (Comprar Início Nov)", status: false }
         ]
     };
 
@@ -473,10 +478,10 @@
                 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
                 db = firebase.firestore();
                 isCloudSyncActive = true;
-                updateSyncBadge("☁️ Nuvem Ativa", "bg-[#F2E0D1]", "text-[#8C5A46]");
+                updateSyncBadge("☁️ Nuvem Ativa", "bg-green-100", "text-green-800");
                 
-                // MUDANÇA: 'japao2026_v2' força todos os telemóveis a baixar a nova versão do roteiro
-                db.collection('planner').doc('japao2026_v2').onSnapshot((doc) => {
+                // VERSÃO 3 DO BANCO DE DADOS (PULL NOVO PARA LIMPAR CACHE ANTIGO)
+                db.collection('planner').doc('japao2026_v3').onSnapshot((doc) => {
                     if (doc.metadata.hasPendingWrites) {
                         hideLoading();
                         return;
@@ -536,22 +541,21 @@
     }
 
     function loadLocalFallback() {
-        window.itineraryData = JSON.parse(localStorage.getItem('planner_japao_itinerary_v2')) || JSON.parse(JSON.stringify(defaultItinerary));
-        window.logisticsData = JSON.parse(localStorage.getItem('planner_japao_logistics_v2')) || JSON.parse(JSON.stringify(defaultLogistics));
+        window.itineraryData = JSON.parse(localStorage.getItem('planner_japao_iti_v3')) || JSON.parse(JSON.stringify(defaultItinerary));
+        window.logisticsData = JSON.parse(localStorage.getItem('planner_japao_log_v3')) || JSON.parse(JSON.stringify(defaultLogistics));
         renderAll();
     }
 
-    // SALVAMENTO COM DEBOUNCE DE 1.5 SEGUNDOS
     window.saveData = function() {
-        if(isCloudSyncActive) updateSyncBadge("☁️ Salvando...", "bg-[#FFF0E5]", "text-[#BA3F30]");
+        if(isCloudSyncActive) updateSyncBadge("☁️ A guardar...", "bg-[#FFF0E5]", "text-[#BA3F30]");
         clearTimeout(saveTimeout);
         saveTimeout = setTimeout(() => {
             if (isCloudSyncActive && db) {
                 saveToCloud();
             } else {
                 try {
-                    localStorage.setItem('planner_japao_itinerary_v2', JSON.stringify(window.itineraryData));
-                    localStorage.setItem('planner_japao_logistics_v2', JSON.stringify(window.logisticsData));
+                    localStorage.setItem('planner_japao_iti_v3', JSON.stringify(window.itineraryData));
+                    localStorage.setItem('planner_japao_log_v3', JSON.stringify(window.logisticsData));
                 } catch(e) {}
             }
         }, 1500); 
@@ -559,12 +563,12 @@
 
     function saveToCloud() {
         if (!db) return;
-        db.collection('planner').doc('japao2026_v2').set({
+        db.collection('planner').doc('japao2026_v3').set({
             itinerary: window.itineraryData,
             logistics: window.logisticsData,
             updatedAt: new Date().toISOString()
         }).then(() => {
-            updateSyncBadge("☁️ Nuvem Ativa", "bg-[#F2E0D1]", "text-[#8C5A46]");
+            updateSyncBadge("☁️ Nuvem Ativa", "bg-green-100", "text-green-800");
         }).catch((err) => {
             updateSyncBadge("⚠️ Erro Sync", "bg-red-100", "text-red-800");
         });
@@ -592,7 +596,7 @@
         window.isEditMode = !window.isEditMode;
         const btn = document.getElementById('global-edit-btn');
         if (window.isEditMode) {
-            btn.innerHTML = "💾 Salvar Alterações";
+            btn.innerHTML = "💾 Guardar Alterações";
             btn.style.backgroundColor = 'var(--accent-maple)';
             document.getElementById('section-itinerario').classList.add('edit-mode-active');
             document.getElementById('section-logistica').classList.add('edit-mode-active');
@@ -681,12 +685,13 @@
     };
 
     function renderDashboard() {
-        const tripStart = new Date('2026-11-05T00:00:00'); 
-        const tripEnd = new Date('2026-11-25T23:59:59'); 
+        const tripStart = new Date('2026-11-01T00:00:00'); 
+        const tripEnd = new Date('2026-11-26T23:59:59'); // ATUALIZADO PARA 26/11
         const now = new Date(); 
         
         let diffDays = Math.floor((now - tripStart) / (1000 * 60 * 60 * 24)) + 1;
-        const totalDays = 21;
+        const totalDays = 26; // ATUALIZADO
+        
         const title = document.getElementById('live-title'); const sub = document.getElementById('live-subtitle');
         const badge = document.getElementById('live-badge'); const bar = document.getElementById('live-bar');
         const pct = document.getElementById('live-pct'); const city = document.getElementById('live-city');
@@ -694,9 +699,9 @@
 
         if (now < tripStart) {
             const daysLeft = Math.ceil((tripStart - now) / (1000 * 60 * 60 * 24));
-            badge.innerText = "Contagem Regressiva"; title.innerText = `Faltam ${daysLeft} dias!`;
-            sub.innerText = "Planejamento a todo vapor."; bar.style.width = "0%"; pct.innerText = "0%";
-            city.innerText = "Brasil 🏠"; next.innerText = "Haneda (HND)"; count.innerText = `${daysLeft} dias restantes`;
+            badge.innerText = "Contagem Decrescente"; title.innerText = `Faltam ${daysLeft} dias!`;
+            sub.innerText = "O planeamento está a todo o vapor."; bar.style.width = "0%"; pct.innerText = "0%";
+            city.innerText = "Brasil 🏠"; next.innerText = "Guarulhos (GRU)"; count.innerText = `${daysLeft} dias restantes`;
         } else if (now > tripEnd) {
             badge.innerText = "Concluído"; badge.style.backgroundColor = "#F2E0D1"; badge.style.color = "#8C5A46";
             title.innerText = "Obrigado, Japão! 🇯🇵"; sub.innerText = "Memórias inesquecíveis.";
@@ -708,12 +713,12 @@
             title.innerText = currentDayData.title; sub.innerText = currentDayData.pTitle;
             const progress = Math.round((diffDays / totalDays) * 100);
             bar.style.width = `${progress}%`; pct.innerText = `${progress}%`;
-            city.innerText = currentDayData.pCity; next.innerText = flatDays[diffDays] ? flatDays[diffDays].pCity : "Retorno"; count.innerText = `${totalDays - diffDays} dias restantes`;
+            city.innerText = currentDayData.pCity; next.innerText = flatDays[diffDays] ? flatDays[diffDays].pCity : "Regresso"; count.innerText = `${totalDays - diffDays} dias restantes`;
         }
 
         if (window.myChart) window.myChart.destroy();
         window.myChart = new Chart(document.getElementById('nightsChart'), {
-            type: 'doughnut', data: { labels: ['Tóquio (P1)', 'Alpes/Kanazawa', 'Quioto', 'Osaka', 'Tóquio (P2)'], datasets: [{ data: [5, 3, 5, 3, 5], backgroundColor: ['#BA3F30', '#D98C00', '#4A3525', '#8C5A46', '#D66455'], borderWidth: 0 }] },
+            type: 'doughnut', data: { labels: ['Pré-Japão', 'Tóquio (P1)', 'Alpes', 'Kansai', 'Tóquio (P2)'], datasets: [{ data: [4, 5, 3, 8, 6], backgroundColor: ['#8C5A46', '#BA3F30', '#D98C00', '#4A3525', '#D66455'], borderWidth: 0 }] },
             options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#4A3525' } } }, cutout: '75%' }
         });
     }
