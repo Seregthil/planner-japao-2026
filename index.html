@@ -9,11 +9,12 @@
     <meta name="theme-color" content="#4A3525">
     <title>Japão 2026 | Planner Outono Koyo</title>
     
-    <!-- PWA Manifest -->
     <link rel="manifest" href='data:application/json;charset=utf-8,%7B%22name%22%3A%22Jap%C3%A3o%202026%20Planner%22%2C%22short_name%22%3A%22Jap%C3%A3o%202026%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23FCE8D5%22%2C%22theme_color%22%3A%22%234A3525%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fplacehold.co%2F192x192%2F4A3525%2Fffffff%3Ftext%3D%F0%9F%8D%81%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%7D%2C%7B%22src%22%3A%22https%3A%2F%2Fplacehold.co%2F512x512%2F4A3525%2Fffffff%3Ftext%3D%F0%9F%8D%81%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D'>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <style>
         :root {
@@ -97,8 +98,8 @@
 
 <div id="loading-overlay" class="items-center text-center p-4">
     <div class="text-6xl mb-4 animate-bounce">🍂</div>
-    <h2 class="text-xl font-bold" style="color: var(--accent-wood);">Carregando Planner...</h2>
-    <p class="text-sm mt-2" style="color: #8C5A46;">Preparando itinerário de outono.</p>
+    <h2 class="text-xl font-bold" style="color: var(--accent-wood);">Conectando à Nuvem...</h2>
+    <p class="text-sm mt-2" style="color: #8C5A46;">Sincronizando itinerário de outono.</p>
 </div>
 
 <div id="image-viewer-modal" class="fixed inset-0 bg-[#2A1D13]/95 z-50 hidden flex flex-col justify-between p-4 md:p-6 select-none">
@@ -138,27 +139,6 @@
     </div>
 </div>
 
-<!-- MODAL: GUIA DE BOLSO DE TRANSPORTES -->
-<div id="pocket-guide-modal" class="fixed inset-0 bg-[#2A1D13]/80 z-50 hidden flex items-center justify-center p-4 md:p-6 backdrop-blur-sm">
-    <div class="bg-[#FAEDE3] rounded-3xl max-w-5xl w-full h-[90vh] md:h-[85vh] shadow-2xl flex flex-col relative overflow-hidden border border-[#E2CFC2]">
-        <div class="flex justify-between items-center p-5 md:p-6 border-b border-[#E2CFC2] bg-white">
-            <div class="flex items-center gap-3">
-                <span class="text-3xl">🚆</span>
-                <div>
-                    <h3 class="text-lg md:text-xl font-black text-[#4A3525] tracking-tight leading-none">Manual de Bolso: Transportes</h3>
-                    <p class="text-[10px] md:text-xs text-[#8C5A46] font-medium mt-1">33 Cartões de Operação Rápida</p>
-                </div>
-            </div>
-            <button onclick="closePocketGuide()" class="text-[#8C5A46] hover:text-red-500 hover:bg-red-50 font-bold text-xl w-10 h-10 flex items-center justify-center rounded-full bg-[#F2E0D1] transition-colors">✕</button>
-        </div>
-        
-        <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
-            <div class="w-full md:w-1/3 bg-[#FFF9F2] border-r border-[#E2CFC2] overflow-x-auto md:overflow-y-auto p-4 flex md:flex-col gap-2 no-scrollbar" id="pg-sidebar"></div>
-            <div class="w-full md:w-2/3 bg-white overflow-y-auto p-4 md:p-8 space-y-6" id="pg-content"></div>
-        </div>
-    </div>
-</div>
-
 <header class="bg-white/90 backdrop-blur-md border-b border-[#E2CFC2] sticky top-0 z-40 shadow-sm">
     <div class="max-w-5xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
         <div class="flex items-center gap-3">
@@ -166,7 +146,7 @@
             <div>
                 <div class="flex items-center gap-2">
                     <h1 class="text-xl font-black tracking-tight uppercase" style="color: var(--accent-wood);">Japão 2026</h1>
-                    <span id="sync-status-badge" class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#F2E0D1] text-[#8C5A46]" title="Status">📱 Modo Rápido</span>
+                    <span id="sync-status-badge" class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#F2E0D1] text-[#8C5A46]" title="Status da Nuvem">☁️ Conectando...</span>
                 </div>
                 <p class="text-[10px] text-[#8C5A46] uppercase tracking-widest font-bold">Você & Jéssica • Planner Outono</p>
             </div>
@@ -249,37 +229,23 @@
         </div>
     </section>
 
-    <!-- Seção Itinerário -->
-    <section id="section-itinerario" class="hidden space-y-6">
-        <div class="flex flex-col gap-4">
-            <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2" id="phase-filters">
-                <button onclick="window.filterPhase('all')" class="phase-btn active px-4 py-2 rounded-full border border-[#F5D7C4] bg-white text-xs font-bold transition-all whitespace-nowrap shadow-sm" id="f-all">Ver Tudo</button>
-                <button onclick="window.filterPhase(0)" class="phase-btn px-4 py-2 rounded-full border border-[#F5D7C4] bg-white text-[#8C5A46] text-xs font-bold transition-all whitespace-nowrap hover:bg-[#FFF5EB] shadow-sm" id="f-0">Fase 0: Pré-Japão</button>
-                <button onclick="window.filterPhase(1)" class="phase-btn px-4 py-2 rounded-full border border-[#F5D7C4] bg-white text-[#8C5A46] text-xs font-bold transition-all whitespace-nowrap hover:bg-[#FFF5EB] shadow-sm" id="f-1">Fase 1: Tóquio Leste</button>
-                <button onclick="window.filterPhase(2)" class="phase-btn px-4 py-2 rounded-full border border-[#F5D7C4] bg-white text-[#8C5A46] text-xs font-bold transition-all whitespace-nowrap hover:bg-[#FFF5EB] shadow-sm" id="f-2">Fase 2: Alpes</button>
-                <button onclick="window.filterPhase(3)" class="phase-btn px-4 py-2 rounded-full border border-[#F5D7C4] bg-white text-[#8C5A46] text-xs font-bold transition-all whitespace-nowrap hover:bg-[#FFF5EB] shadow-sm" id="f-3">Fase 3: Kansai</button>
-                <button onclick="window.filterPhase(4)" class="phase-btn px-4 py-2 rounded-full border border-[#F5D7C4] bg-white text-[#8C5A46] text-xs font-bold transition-all whitespace-nowrap hover:bg-[#FFF5EB] shadow-sm" id="f-4">Fase 4: Tóquio Oeste</button>
-            </div>
-        </div>
-        <div id="itinerary-canvas" class="space-y-10"></div>
-    </section>
-
+    <!-- Secção Logística -->
+    <section id="section-logistica" class="hidden space-y-6">
+        <div class="bg-white p-6 md:p-8 rounded-3xl border border-[#F5D7C4] shadow-md">
+            
+            <!-- BANNER GUIA DE BOLSO DE TRANSPORTES -->
+            <div class="mb-10 p-6 md:p-8 rounded-3xl bg-gradient-to-r from-[#FDEBD0] to-[#FADBD8] border border-[#F5D7C4] shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
     <!-- Seção Logística -->
     <section id="section-logistica" class="hidden space-y-6">
         <div class="bg-white p-6 md:p-8 rounded-3xl border border-[#F5D7C4] shadow-md">
             
-            <div class="mb-10 p-6 md:p-8 rounded-3xl bg-gradient-to-r from-[#FDEBD0] to-[#FADBD8] border border-[#F5D7C4] shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
-                <div class="flex items-center gap-4 text-center md:text-left">
-                    <div class="text-5xl md:text-6xl drop-shadow-sm">🚆</div>
-                    <div>
-                        <h3 class="text-xl font-black text-[#4A3525] tracking-tight">Guia de Bolso Interativo</h3>
-                        <p class="text-sm text-[#8C5A46] font-medium mt-1">Acesse as rotas detalhadas, plataformas e baldeações do seu PDF de transportes (Cartões 01 a 33).</p>
-                    </div>
-                </div>
-                <button onclick="openPocketGuide()" class="w-full md:w-auto px-8 py-4 bg-[#BA3F30] text-white font-bold text-sm rounded-2xl shadow-lg hover:scale-[1.03] transition-transform whitespace-nowrap">
-                    📖 Abrir Guia de Trens
-                </button>
+            <div class="mb-10">
+                <h3 class="text-xl md:text-2xl font-black text-[#4A3525] tracking-tight flex items-center gap-2 mb-2">🚆 Manual de Bolso: Transportes</h3>
+                <p class="text-sm text-[#8C5A46] font-medium mb-6">Clique nas etapas e nos cartões abaixo para expandir as rotas detalhadas, plataformas e links do Google Maps extraídos do PDF.</p>
+                <div id="pocket-guide-inline" class="space-y-3"></div>
             </div>
+
+            <hr class="border-[#E2CFC2] my-10">
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
                 <div class="lg:col-span-2 space-y-6">
@@ -311,6 +277,20 @@
 </main>
 
 <script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyC7loa555YSL3YR8NIAuOduZcxm1DnK4jo",
+        authDomain: "planner-japao-2026-422e3.firebaseapp.com",
+        projectId: "planner-japao-2026-422e3",
+        storageBucket: "planner-japao-2026-422e3.firebasestorage.app",
+        messagingSenderId: "877715007215",
+        appId: "1:877715007215:web:9494938a9ca0eeb37d5d1a"
+    };
+
+    let db = null;
+    let isCloudSyncActive = false;
+    let saveTimeout = null;
+
+    // NOVO ROTEIRO COMPLETAMENTE ATUALIZADO (Até 26/11)
     const defaultItinerary = [
         { phase: 0, title: "A Preparação no Brasil", city: "Brasil", days: [
             { date: "01/11 a 03/11", title: "Início dos Preparativos", events: [{ time: "Dia", activity: "Arrumar Malas e Documentos", desc: "Separar roupas de frio, passaportes e ativar cartões Wise/Nomad.", attachments: [] }] },
@@ -481,6 +461,7 @@
         ]
     };
 
+    // DADOS DO GUIA DE BOLSO DE TRANSPORTES (PDF Integrado)
     const pocketGuideData = [
         {
             title: "Etapa 1: Tóquio Leste",
@@ -541,8 +522,8 @@
         }
     ];
 
-    window.itineraryData = JSON.parse(localStorage.getItem('planner_japao_iti_v3')) || JSON.parse(JSON.stringify(defaultItinerary));
-    window.logisticsData = JSON.parse(localStorage.getItem('planner_japao_log_v3')) || JSON.parse(JSON.stringify(defaultLogistics));
+    window.itineraryData = JSON.parse(JSON.stringify(defaultItinerary));
+    window.logisticsData = JSON.parse(JSON.stringify(defaultLogistics));
     
     window.isEditMode = false;
     window.currentPhase = 'all';
@@ -553,18 +534,70 @@
     let startX = 0; let startY = 0; let initialPinchDistance = null;
 
     function initApp() {
-        // Carrega instantaneamente do LocalStorage e esconde o loading em menos de 0.1s
-        loadLocalFallback();
-        hideLoading();
+        if (firebaseConfig && firebaseConfig.apiKey) {
+            try {
+                if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+                isCloudSyncActive = true;
+                updateSyncBadge("☁️ Nuvem Ativa", "bg-green-100", "text-green-800");
+                
+                // VERSÃO 3 DO BANCO DE DADOS (PULL NOVO PARA LIMPAR CACHE ANTIGO)
+                db.collection('planner').doc('japao2026_v3').onSnapshot((doc) => {
+                    if (doc.metadata.hasPendingWrites) {
+                        hideLoading();
+                        return;
+                    }
+                    if (doc.exists) {
+                        const data = doc.data();
+                        
+                        if (window.isEditMode) {
+                            if (data.itinerary) window.itineraryData = data.itinerary;
+                            if (data.logistics) window.logisticsData = data.logistics;
+                            
+                            const activeEl = document.activeElement;
+                            if (activeEl && activeEl.getAttribute('contenteditable') === 'true') {
+                                activeEl.dispatchEvent(new Event('input', { bubbles: true }));
+                            }
+                            return; 
+                        }
+                        
+                        if (data.itinerary) window.itineraryData = data.itinerary;
+                        if (data.logistics) window.logisticsData = data.logistics;
+                        renderAll();
+                    } else {
+                        saveToCloud();
+                    }
+                    hideLoading();
+                }, (error) => {
+                    console.warn("Firestore sync error:", error);
+                    loadLocalFallback();
+                    hideLoading();
+                });
+            } catch (e) {
+                console.warn("Firebase init failed:", e);
+                loadLocalFallback();
+                hideLoading();
+            }
+        } else {
+            updateSyncBadge("📱 Modo Local", "bg-[#F2E0D1]", "text-[#8C5A46]");
+            loadLocalFallback();
+            hideLoading();
+        }
         setupViewerGestures();
         setupPwaListener();
+    }
+
+    function updateSyncBadge(text, bg, tc) {
+        const b = document.getElementById('sync-status-badge');
+        b.innerText = text;
+        b.className = `px-2 py-0.5 rounded-full text-[9px] font-bold ${bg} ${tc}`;
     }
 
     function hideLoading() {
         const overlay = document.getElementById('loading-overlay');
         if (overlay) {
             overlay.style.opacity = '0';
-            setTimeout(() => overlay.style.display = 'none', 300);
+            setTimeout(() => overlay.style.display = 'none', 400);
         }
     }
 
@@ -575,11 +608,32 @@
     }
 
     window.saveData = function() {
-        try {
-            localStorage.setItem('planner_japao_iti_v3', JSON.stringify(window.itineraryData));
-            localStorage.setItem('planner_japao_log_v3', JSON.stringify(window.logisticsData));
-        } catch(e) {}
+        if(isCloudSyncActive) updateSyncBadge("☁️ A guardar...", "bg-[#FFF0E5]", "text-[#BA3F30]");
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+            if (isCloudSyncActive && db) {
+                saveToCloud();
+            } else {
+                try {
+                    localStorage.setItem('planner_japao_iti_v3', JSON.stringify(window.itineraryData));
+                    localStorage.setItem('planner_japao_log_v3', JSON.stringify(window.logisticsData));
+                } catch(e) {}
+            }
+        }, 1500); 
     };
+
+    function saveToCloud() {
+        if (!db) return;
+        db.collection('planner').doc('japao2026_v3').set({
+            itinerary: window.itineraryData,
+            logistics: window.logisticsData,
+            updatedAt: new Date().toISOString()
+        }).then(() => {
+            updateSyncBadge("☁️ Nuvem Ativa", "bg-green-100", "text-green-800");
+        }).catch((err) => {
+            updateSyncBadge("⚠️ Erro Sync", "bg-red-100", "text-red-800");
+        });
+    }
 
     function setupPwaListener() {
         window.addEventListener('beforeinstallprompt', (e) => {
@@ -638,7 +692,6 @@
 
     function setupViewerGestures() {
         const wrapper = document.getElementById('viewer-wrapper');
-        if(!wrapper) return;
         wrapper.addEventListener('mousedown', (e) => { if (currentZoom > 1) { isDragging = true; startX = e.clientX - panX; startY = e.clientY - panY; } });
         window.addEventListener('mousemove', (e) => { if (isDragging) { panX = e.clientX - startX; panY = e.clientY - startY; updateViewerTransform(); } });
         window.addEventListener('mouseup', () => { isDragging = false; });
@@ -694,11 +747,11 @@
 
     function renderDashboard() {
         const tripStart = new Date('2026-11-01T00:00:00'); 
-        const tripEnd = new Date('2026-11-26T23:59:59');
+        const tripEnd = new Date('2026-11-26T23:59:59'); // ATUALIZADO PARA 26/11
         const now = new Date(); 
         
         let diffDays = Math.floor((now - tripStart) / (1000 * 60 * 60 * 24)) + 1;
-        const totalDays = 26;
+        const totalDays = 26; // ATUALIZADO
         
         const title = document.getElementById('live-title'); const sub = document.getElementById('live-subtitle');
         const badge = document.getElementById('live-badge'); const bar = document.getElementById('live-bar');
@@ -707,8 +760,8 @@
 
         if (now < tripStart) {
             const daysLeft = Math.ceil((tripStart - now) / (1000 * 60 * 60 * 24));
-            badge.innerText = "Contagem Regressiva"; title.innerText = `Faltam ${daysLeft} dias!`;
-            sub.innerText = "O planejamento está a todo vapor."; bar.style.width = "0%"; pct.innerText = "0%";
+            badge.innerText = "Contagem Decrescente"; title.innerText = `Faltam ${daysLeft} dias!`;
+            sub.innerText = "O planeamento está a todo o vapor."; bar.style.width = "0%"; pct.innerText = "0%";
             city.innerText = "Brasil 🏠"; next.innerText = "Guarulhos (GRU)"; count.innerText = `${daysLeft} dias restantes`;
         } else if (now > tripEnd) {
             badge.innerText = "Concluído"; badge.style.backgroundColor = "#F2E0D1"; badge.style.color = "#8C5A46";
@@ -721,17 +774,14 @@
             title.innerText = currentDayData.title; sub.innerText = currentDayData.pTitle;
             const progress = Math.round((diffDays / totalDays) * 100);
             bar.style.width = `${progress}%`; pct.innerText = `${progress}%`;
-            city.innerText = currentDayData.pCity; next.innerText = flatDays[diffDays] ? flatDays[diffDays].pCity : "Retorno"; count.innerText = `${totalDays - diffDays} dias restantes`;
+            city.innerText = currentDayData.pCity; next.innerText = flatDays[diffDays] ? flatDays[diffDays].pCity : "Regresso"; count.innerText = `${totalDays - diffDays} dias restantes`;
         }
 
-        const chartCanvas = document.getElementById('nightsChart');
-        if(chartCanvas) {
-            if (window.myChart) window.myChart.destroy();
-            window.myChart = new Chart(chartCanvas, {
-                type: 'doughnut', data: { labels: ['Pré-Japão', 'Tóquio (P1)', 'Alpes', 'Kansai', 'Tóquio (P2)'], datasets: [{ data: [4, 5, 3, 8, 6], backgroundColor: ['#8C5A46', '#BA3F30', '#D98C00', '#4A3525', '#D66455'], borderWidth: 0 }] },
-                options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#4A3525' } } }, cutout: '75%' }
-            });
-        }
+        if (window.myChart) window.myChart.destroy();
+        window.myChart = new Chart(document.getElementById('nightsChart'), {
+            type: 'doughnut', data: { labels: ['Pré-Japão', 'Tóquio (P1)', 'Alpes', 'Kansai', 'Tóquio (P2)'], datasets: [{ data: [4, 5, 3, 8, 6], backgroundColor: ['#8C5A46', '#BA3F30', '#D98C00', '#4A3525', '#D66455'], borderWidth: 0 }] },
+            options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#4A3525' } } }, cutout: '75%' }
+        });
     }
 
     window.renderItinerary = function(phaseFilter) {
@@ -860,15 +910,65 @@
                 </div>
             `).join('');
         }
+
+        // RENDERIZAÇÃO DO GUIA DE BOLSO EXPANSÍVEL (ACORDEÃO)
+        const guideContainer = document.getElementById('pocket-guide-inline');
+        if(guideContainer) {
+            let guideHtml = '';
+            pocketGuideData.forEach(phase => {
+                guideHtml += `
+                <details class="bg-white rounded-2xl border border-[#F5D7C4] shadow-sm overflow-hidden group mb-4">
+                    <summary class="p-4 md:p-5 font-bold cursor-pointer bg-[#FFF9F2] hover:bg-[#FCE8D5] outline-none list-none flex justify-between items-center transition-colors">
+                        <div class="flex items-center gap-3">
+                            <div>
+                                <div class="text-[#4A3525] text-base md:text-lg">${phase.title}</div>
+                                <div class="text-[#8C5A46] text-[10px] md:text-xs font-normal mt-0.5">${phase.desc}</div>
+                            </div>
+                        </div>
+                        <span class="transform group-open:rotate-180 transition-transform text-[#BA3F30] font-black text-xl">▼</span>
+                    </summary>
+                    <div class="p-4 md:p-5 space-y-3 border-t border-[#F5D7C4] bg-[#FDFBF9]">
+                `;
+                
+                phase.cards.forEach(card => {
+                    // Transforma as tags [Maps: Algum Lugar] em botões clicáveis do Google Maps
+                    let formattedRoute = card.route.replace(/\[Maps: (.*?)\]/g, '<a href="https://www.google.com/maps/search/$1+station+Japan" target="_blank" class="inline-flex items-center gap-1 text-[10px] font-bold bg-[#E6F0FA] text-[#1A5C99] px-2.5 py-1.5 rounded-lg border border-[#B3D4F0] hover:bg-[#CCE0F5] transition-colors mt-3 mr-2 shadow-sm">🗺️ Abrir Mapa: $1</a>');
+                    
+                    guideHtml += `
+                        <details class="bg-white rounded-xl border border-[#E2CFC2] overflow-hidden group/card shadow-sm">
+                            <summary class="p-3 md:p-4 cursor-pointer hover:bg-[#FAEDE3] outline-none list-none flex justify-between items-center transition-colors">
+                                <div class="flex items-center gap-3 pr-4">
+                                    <span class="bg-[#FADBD8] text-[#BA3F30] text-[10px] font-black px-2 py-1 rounded whitespace-nowrap">CARD ${card.id}</span>
+                                    <span class="font-bold text-[#4A3525] text-sm">${card.title}</span>
+                                </div>
+                                <span class="transform group-open/card:rotate-180 transition-transform text-[#8C5A46] text-sm font-black">▼</span>
+                            </summary>
+                            <div class="p-4 border-t border-[#E2CFC2] bg-[#FFF9F2]">
+                                <div class="mb-3 flex justify-start">
+                                    <span class="inline-flex items-center gap-1 text-[10px] font-black bg-[#E2CFC2]/40 text-[#8C5A46] px-2.5 py-1 rounded-md">
+                                        ⏱️ Tempo Estimado: ${card.time}
+                                    </span>
+                                </div>
+                                <div class="text-xs md:text-sm text-[#5C4231] leading-relaxed">
+                                    <span class="font-black text-[#8C5A46] block mb-1">Rotas e Instruções:</span>
+                                    ${formattedRoute}
+                                </div>
+                            </div>
+                        </details>
+                    `;
+                });
+                
+                guideHtml += `</div></details>`;
+            });
+            guideContainer.innerHTML = guideHtml;
+        }
     };
 
     window.showSection = function(id) {
         document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
-        const target = document.getElementById('section-' + id);
-        if(target) target.classList.remove('hidden');
+        document.getElementById('section-' + id).classList.remove('hidden');
         document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-        const btn = document.getElementById('btn-' + id);
-        if(btn) btn.classList.add('active');
+        document.getElementById('btn-' + id).classList.add('active');
         if (id === 'itinerario') window.renderItinerary(window.currentPhase);
         if (id === 'logistica') window.renderLogistics();
     };
@@ -919,57 +1019,6 @@
         renderLogistics(); window.saveData();
     };
     window.removeLog = function(type, idx) { window.logisticsData[type].splice(idx, 1); renderLogistics(); window.saveData(); };
-
-    let currentGuidePhase = 0;
-    window.openPocketGuide = function() {
-        document.getElementById('pocket-guide-modal').classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-        renderPocketGuideSidebar();
-        renderPocketGuideContent(0);
-    };
-
-    window.closePocketGuide = function() {
-        document.getElementById('pocket-guide-modal').classList.add('hidden');
-        document.body.style.overflow = '';
-    };
-
-    function renderPocketGuideSidebar() {
-        const sidebar = document.getElementById('pg-sidebar');
-        if(!sidebar) return;
-        sidebar.innerHTML = pocketGuideData.map((phase, i) => `
-            <button onclick="renderPocketGuideContent(${i})" id="pg-btn-${i}" class="w-full text-left p-3 md:p-4 rounded-xl transition-all border ${i === currentGuidePhase ? 'bg-[#BA3F30] text-white border-[#BA3F30] shadow-md' : 'bg-white text-[#4A3525] border-[#E2CFC2] hover:bg-[#F2E0D1]'}">
-                <div class="font-bold text-sm md:text-base">${phase.title}</div>
-                <div class="text-[10px] md:text-xs mt-1 ${i === currentGuidePhase ? 'text-[#FADBD8]' : 'text-[#8C5A46]'}">${phase.desc}</div>
-            </button>
-        `).join('');
-    }
-
-    window.renderPocketGuideContent = function(index) {
-        currentGuidePhase = index;
-        renderPocketGuideSidebar();
-        const phase = pocketGuideData[index];
-        const content = document.getElementById('pg-content');
-        if(!content) return;
-        content.innerHTML = `
-            <div class="mb-6">
-                <h4 class="text-xl md:text-2xl font-black text-[#4A3525] tracking-tight">${phase.title}</h4>
-                <p class="text-sm font-medium text-[#8C5A46] mt-1">${phase.desc}</p>
-            </div>
-            <div class="grid grid-cols-1 gap-4">
-                ${phase.cards.map(card => `
-                    <div class="bg-white p-4 md:p-5 rounded-2xl border border-[#F5D7C4] shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
-                        <div class="absolute top-0 right-0 bg-[#FADBD8] text-[#BA3F30] text-[10px] font-black px-3 py-1 rounded-bl-xl border-b border-l border-[#F5B7B1]">CARD ${card.id}</div>
-                        <h5 class="font-bold text-sm md:text-base text-[#4A3525] pr-16 mb-3 flex items-start gap-2"><span class="mt-0.5 text-[#D98C00]">📍</span> ${card.title}</h5>
-                        <div class="bg-[#FFF9F2] p-3 md:p-4 rounded-xl border border-[#F5D7C4]">
-                            <p class="text-xs md:text-sm text-[#5C4231] leading-relaxed"><span class="font-black text-[#8C5A46] block mb-1">Rota & Instruções:</span>${card.route}</p>
-                        </div>
-                        <div class="mt-3 flex justify-end"><span class="inline-flex items-center gap-1 text-[10px] font-black bg-[#E2CFC2]/30 text-[#8C5A46] px-2 py-1 rounded-md">⏱️ Tempo ref: ${card.time}</span></div>
-                    </div>
-                `).join('')}
-            </div>
-        `;
-        content.scrollTop = 0;
-    };
 
     window.openAiAssistant = function() {
         const modal = document.getElementById('ai-modal');
