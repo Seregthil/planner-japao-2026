@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -139,6 +139,33 @@
     </div>
 </div>
 
+<!-- MODAL: GUIA DE BOLSO DE TRANSPORTES -->
+<div id="pocket-guide-modal" class="fixed inset-0 bg-[#2A1D13]/80 z-50 hidden flex items-center justify-center p-4 md:p-6 backdrop-blur-sm">
+    <div class="bg-[#FAEDE3] rounded-3xl max-w-5xl w-full h-[90vh] md:h-[85vh] shadow-2xl flex flex-col relative overflow-hidden border border-[#E2CFC2]">
+        <div class="flex justify-between items-center p-5 md:p-6 border-b border-[#E2CFC2] bg-white">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl">🚆</span>
+                <div>
+                    <h3 class="text-lg md:text-xl font-black text-[#4A3525] tracking-tight leading-none">Manual de Bolso: Transportes</h3>
+                    <p class="text-[10px] md:text-xs text-[#8C5A46] font-medium mt-1">33 Cartões de Operação Rápida</p>
+                </div>
+            </div>
+            <button onclick="closePocketGuide()" class="text-[#8C5A46] hover:text-red-500 hover:bg-red-50 font-bold text-xl w-10 h-10 flex items-center justify-center rounded-full bg-[#F2E0D1] transition-colors">✕</button>
+        </div>
+        
+        <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
+            <!-- Menu Lateral (Estágios da Viagem) -->
+            <div class="w-full md:w-1/3 bg-[#FFF9F2] border-r border-[#E2CFC2] overflow-x-auto md:overflow-y-auto p-4 flex md:flex-col gap-2 no-scrollbar" id="pg-sidebar">
+                <!-- Gerado por JS -->
+            </div>
+            <!-- Área de Conteúdo (Cards de Trem) -->
+            <div class="w-full md:w-2/3 bg-white overflow-y-auto p-4 md:p-8 space-y-6" id="pg-content">
+                <!-- Gerado por JS -->
+            </div>
+        </div>
+    </div>
+</div>
+
 <header class="bg-white/90 backdrop-blur-md border-b border-[#E2CFC2] sticky top-0 z-40 shadow-sm">
     <div class="max-w-5xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
         <div class="flex items-center gap-3">
@@ -229,29 +256,29 @@
         </div>
     </section>
 
-    <!-- Seção Itinerário -->
-    <section id="section-itinerario" class="hidden space-y-6">
-        <div class="flex flex-col gap-4">
-            <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2" id="phase-filters">
-                <button onclick="window.filterPhase('all')" class="phase-btn active px-4 py-2 rounded-full border border-[#F5D7C4] bg-white text-xs font-bold transition-all whitespace-nowrap shadow-sm" id="f-all">Ver Tudo</button>
-                <button onclick="window.filterPhase(0)" class="phase-btn px-4 py-2 rounded-full border border-[#F5D7C4] bg-white text-[#8C5A46] text-xs font-bold transition-all whitespace-nowrap hover:bg-[#FFF5EB] shadow-sm" id="f-0">0: Pré-Japão</button>
-                <button onclick="window.filterPhase(1)" class="phase-btn px-4 py-2 rounded-full border border-[#F5D7C4] bg-white text-[#8C5A46] text-xs font-bold transition-all whitespace-nowrap hover:bg-[#FFF5EB] shadow-sm" id="f-1">1: Tóquio (P1)</button>
-                <button onclick="window.filterPhase(2)" class="phase-btn px-4 py-2 rounded-full border border-[#F5D7C4] bg-white text-[#8C5A46] text-xs font-bold transition-all whitespace-nowrap hover:bg-[#FFF5EB] shadow-sm" id="f-2">2: Alpes</button>
-                <button onclick="window.filterPhase(3)" class="phase-btn px-4 py-2 rounded-full border border-[#F5D7C4] bg-white text-[#8C5A46] text-xs font-bold transition-all whitespace-nowrap hover:bg-[#FFF5EB] shadow-sm" id="f-3">3: Kansai</button>
-                <button onclick="window.filterPhase(4)" class="phase-btn px-4 py-2 rounded-full border border-[#F5D7C4] bg-white text-[#8C5A46] text-xs font-bold transition-all whitespace-nowrap hover:bg-[#FFF5EB] shadow-sm" id="f-4">4: Tóquio (P2)</button>
-            </div>
-        </div>
-        <div id="itinerary-canvas" class="space-y-10"></div>
-    </section>
-
-    <!-- Seção Logística -->
+    <!-- Secção Logística -->
     <section id="section-logistica" class="hidden space-y-6">
         <div class="bg-white p-6 md:p-8 rounded-3xl border border-[#F5D7C4] shadow-md">
+            
+            <!-- BANNER GUIA DE BOLSO DE TRANSPORTES -->
+            <div class="mb-10 p-6 md:p-8 rounded-3xl bg-gradient-to-r from-[#FDEBD0] to-[#FADBD8] border border-[#F5D7C4] shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="flex items-center gap-4 text-center md:text-left">
+                    <div class="text-5xl md:text-6xl drop-shadow-sm">🚆</div>
+                    <div>
+                        <h3 class="text-xl font-black text-[#4A3525] tracking-tight">Guia de Bolso Interativo</h3>
+                        <p class="text-sm text-[#8C5A46] font-medium mt-1">Acesse as rotas detalhadas, plataformas e baldeações do seu PDF de transportes (Cartões 01 a 33).</p>
+                    </div>
+                </div>
+                <button onclick="openPocketGuide()" class="w-full md:w-auto px-8 py-4 bg-[#BA3F30] text-white font-bold text-sm rounded-2xl shadow-lg hover:scale-[1.03] transition-transform whitespace-nowrap">
+                    📖 Abrir Guia de Trens
+                </button>
+            </div>
+
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
                 <div class="lg:col-span-2 space-y-6">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-sm font-black uppercase tracking-widest" style="color: var(--accent-ginkgo);">🚅 Trens & Conexões</h3>
-                        <button onclick="window.addLogItem('transport')" class="action-btn text-xs font-bold px-3 py-1 rounded-lg shadow-sm" style="color: var(--accent-maple); background-color: #FADBD8;">+ Adicionar Trem</button>
+                        <h3 class="text-sm font-black uppercase tracking-widest" style="color: var(--accent-ginkgo);">🚅 Trens & Conexões (Resumo)</h3>
+                        <button onclick="window.addLogItem('transport')" class="action-btn text-xs font-bold px-3 py-1 rounded-lg" style="color: var(--accent-maple); background-color: #FADBD8;">+ Adicionar Trem</button>
                     </div>
                     <div id="transport-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
                 </div>
@@ -460,6 +487,67 @@
             { item: "Shibuya Sky (Comprar Início Nov)", status: false }
         ]
     };
+
+    // DADOS DO GUIA DE BOLSO DE TRANSPORTES (PDF Integrado)
+    const pocketGuideData = [
+        {
+            title: "Etapa 1: Tóquio Leste",
+            desc: "Chegada, Asakusa, Ginza e Fuji (05 a 09/11)",
+            cards: [
+                { id: "#01", title: "Haneda (T3) → Tosei Hotel Kuramae", time: "~45 min", route: "Embarque: Keikyu Line (Plat. 2) trens p/ Narita/Aoto. Permanecer no trem (vira Toei Asakusa Line). Descer em Kuramae (A-17, Saída A0 c/ elevador)." },
+                { id: "#02-A/B", title: "Hotel → Tsukiji → teamLab Borderless", time: "22 min", route: "Tsukiji: Oedo Line (A7) p/ Tsukijishijo. teamLab: Kamiyacho (Hibiya Line H-05, Saída 5, subsolo B1F)." },
+                { id: "#03/04", title: "Compras Ginza → Retorno ao Hotel", time: "17 min", route: "De Kamiyacho para Hibiya ou Ginza. Volta c/ sacolas: Higashi-ginza (A-11, Plat 2) direto 6 paradas para Kuramae (A-17)." },
+                { id: "#05", title: "Kuramae → Yanaka → Ueno Park", time: "14 min", route: "Oedo Line p/ Ueno-okachimachi + JR Yamanote (Nippori West Exit). Caminhada pelo cemitério até Ueno." },
+                { id: "#06/07", title: "Ameyoko → Akihabara → Retorno", time: "10 min", route: "JR Okachimachi p/ Akihabara (1 parada). Volta: JR p/ Asakusabashi + Toei Asakusa até Kuramae." },
+                { id: "#08/09", title: "Kuramae → Tokyo Sta / Marunouchi", time: "13 min", route: "Toei Asakusa (Plat. 1) direto para Nihombashi (A-13) + 6 min a pé." },
+                { id: "#10", title: "Kuramae → Shinjuku (Tour Fuji)", time: "22 min", route: "Toei Oedo Line (Plat. 1) direto p/ Shinjuku-nishiguchi (E-01). 10 paradas sem baldeação!" }
+            ]
+        },
+        {
+            title: "Etapa 2: Alpes e Kanazawa",
+            desc: "Takayama e Kanazawa (10 a 12/11)",
+            cards: [
+                { id: "#12", title: "Tosei Hotel → Tokyo Station", time: "12 min", route: "Táxi (~06h05) para Tokyo Sta. Yaesu Central Entrance (acesso imediato Plat 14-19)." },
+                { id: "#13", title: "Tokyo → Nagoya → Takayama", time: "4h10", route: "Shinkansen (06h48) p/ Nagoya. Troca 18 min (Transfer Gate Plat 11). JR Hida 3 (08h43) p/ Takayama." },
+                { id: "#14", title: "Takayama → Shirakawa-go", time: "50 min", route: "Nohi Bus (Baia 4, 09h35). Chegada 10h25. Shuttle no terminal (Baia 1) para o Mirante." },
+                { id: "#15", title: "Shirakawa-go → Kanazawa", time: "1h15", route: "Ônibus 13h50 (Baia 2) p/ Kanazawa. Hotel Four Points (ônibus Plat 6-9, 2 paradas até Musashigatsuji)." },
+                { id: "#16", title: "Kanazawa Loop Bus", time: "Dia Todo", route: "Right Loop Bus (RL) ou a pé. Castelo → Nagamachi → Ninja Temple (táxi/ônibus)." }
+            ]
+        },
+        {
+            title: "Etapa 3: Quioto e Nara",
+            desc: "Kansai Tradicional (13 a 17/11)",
+            cards: [
+                { id: "#17", title: "Kanazawa → Tsuruga → Quioto", time: "2h30", route: "Hokuriku Shinkansen p/ Tsuruga. Baldeação vertical (descer do 3º ao 1º andar) p/ Thunderbird até Quioto." },
+                { id: "#18", title: "Hotel Sanjo → Fushimi Inari", time: "9 min", route: "Keihan Line em Sanjo (KH40). APENAS trens Sub-Express ou Local! Descer em Fushimi-Inari (KH34)." },
+                { id: "#19", title: "Bate-volta a Nara", time: "50 min", route: "Keihan (Tambabashi) ou Metrô (Karasuma Oike) + Kintetsu Line direto p/ Kintetsu-Nara (mais perto do parque que a JR)." },
+                { id: "#20/21", title: "Arashiyama → Kinkaku-ji", time: "50 min", route: "Tozai Line (Uzumasa Tenjingawa) + Randen Arashiyama. Depois Randen p/ Kitanohakubaicho + Ônibus 205." },
+                { id: "#22", title: "Kiyomizu-dera / Cerimônia do Chá", time: "10 min", route: "Keihan Gion-Shijo (KH39) p/ Kiyomizu-Gojo (KH38) + 5 min a pé p/ Jotoku-ji (12h30)." },
+                { id: "#23", title: "Higashiyama → Nanzen-ji", time: "18 min", route: "Keihan (Kiyomizu-Gojo p/ Sanjo) + Tozai Line p/ Keage Station (T09, Saída 1)." }
+            ]
+        },
+        {
+            title: "Etapa 4: Destilaria e Osaka",
+            desc: "Yamazaki e Neons (18 a 20/11)",
+            cards: [
+                { id: "#24", title: "Quioto → Yamazaki → Osaka", time: "54 min", route: "De Quioto, trens Local/Rapid APENAS. Descer Yamazaki (JR-A18). Pós-Tour: Hankyu Line de Oyamazaki direto p/ Nagahoribashi." },
+                { id: "#25", title: "Osaka Castle → Umeda → Tenma", time: "Saltos 6m", route: "Castelo: Nagahoribashi (N16) p/ Morinomiya. Umeda: Yodoyabashi (M17) p/ Umeda (M16). Tenma: JR Loop Line (1 parada)." },
+                { id: "#26", title: "Shinsekai e Ura-Namba", time: "4 min", route: "Metrô p/ Dobutsuen-mae ou Ebisucho. De Ebisucho, voltar direto a Nagahoribashi (2 paradas) p/ massagem." }
+            ]
+        },
+        {
+            title: "Etapa 5: Tóquio Oeste & Narita",
+            desc: "Retorno a Tóquio (21 a 26/11)",
+            cards: [
+                { id: "#27", title: "Osaka → Tóquio → Yotsuya", time: "3h15", route: "Shinkansen de Shin-Osaka (08h00). Em Tokyo Sta, usar a JR Chuo Line Rapid direto p/ Yotsuya (9 min). Bilhete Shinkansen cobre!" },
+                { id: "#28", title: "Yotsuya → Shinjuku Gyoen", time: "3 min", route: "Marunouchi Line (M12) p/ Shinjuku-gyoemmae (M10, Saída 2)." },
+                { id: "#29", title: "Meiji Jingu → Shibuya → Retorno", time: "20 min", route: "JR Chuo-Sobu p/ Yoyogi + JR Yamanote (Harajuku). Volta Shibuya: Ginza Line p/ Akasaka-mitsuke + Marunouchi p/ Yotsuya." },
+                { id: "#31", title: "Bate-volta Kamakura / Takao", time: "~1h05", route: "Kamakura: Shonan-Shinjuku Line via Shinjuku. Takao: Keio Line Special Express de Shinjuku." },
+                { id: "#32", title: "Jingu Gaien → Rikugien", time: "11 min", route: "Jingu Gaien: Shinanomachi. Rikugien: Yotsuya (Namboku Line N08) direto 5 paradas p/ Komagome (N14)." },
+                { id: "#33", title: "Yotsuya → Shinjuku → Narita", time: "1h20", route: "Táxi Yotsuya p/ Shinjuku South Exit/NewMan. Elevador p/ Plataforma 5/6. N'EX p/ Narita T2-3 (voo Doha 16h55)." }
+            ]
+        }
+    ];
 
     window.itineraryData = JSON.parse(JSON.stringify(defaultItinerary));
     window.logisticsData = JSON.parse(JSON.stringify(defaultLogistics));
@@ -895,6 +983,72 @@
     };
     window.removeLog = function(type, idx) { window.logisticsData[type].splice(idx, 1); renderLogistics(); window.saveData(); };
 
+    // FUNÇÕES DO GUIA DE BOLSO
+    let currentGuidePhase = 0;
+
+    window.openPocketGuide = function() {
+        document.getElementById('pocket-guide-modal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        renderPocketGuideSidebar();
+        renderPocketGuideContent(0);
+    };
+
+    window.closePocketGuide = function() {
+        document.getElementById('pocket-guide-modal').classList.add('hidden');
+        document.body.style.overflow = '';
+    };
+
+    function renderPocketGuideSidebar() {
+        const sidebar = document.getElementById('pg-sidebar');
+        sidebar.innerHTML = pocketGuideData.map((phase, i) => `
+            <button onclick="renderPocketGuideContent(${i})" id="pg-btn-${i}" class="w-full text-left p-3 md:p-4 rounded-xl transition-all border ${i === currentGuidePhase ? 'bg-[#BA3F30] text-white border-[#BA3F30] shadow-md' : 'bg-white text-[#4A3525] border-[#E2CFC2] hover:bg-[#F2E0D1]'}">
+                <div class="font-bold text-sm md:text-base">${phase.title}</div>
+                <div class="text-[10px] md:text-xs mt-1 ${i === currentGuidePhase ? 'text-[#FADBD8]' : 'text-[#8C5A46]'}">${phase.desc}</div>
+            </button>
+        `).join('');
+    }
+
+    window.renderPocketGuideContent = function(index) {
+        currentGuidePhase = index;
+        renderPocketGuideSidebar(); // Update active states
+        
+        const phase = pocketGuideData[index];
+        const content = document.getElementById('pg-content');
+        
+        content.innerHTML = `
+            <div class="mb-6">
+                <h4 class="text-xl md:text-2xl font-black text-[#4A3525] tracking-tight">${phase.title}</h4>
+                <p class="text-sm font-medium text-[#8C5A46] mt-1">${phase.desc}</p>
+            </div>
+            <div class="grid grid-cols-1 gap-4">
+                ${phase.cards.map(card => `
+                    <div class="bg-white p-4 md:p-5 rounded-2xl border border-[#F5D7C4] shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+                        <div class="absolute top-0 right-0 bg-[#FADBD8] text-[#BA3F30] text-[10px] font-black px-3 py-1 rounded-bl-xl border-b border-l border-[#F5B7B1]">
+                            CARD ${card.id}
+                        </div>
+                        <h5 class="font-bold text-sm md:text-base text-[#4A3525] pr-16 mb-3 flex items-start gap-2">
+                            <span class="mt-0.5 text-[#D98C00]">📍</span> ${card.title}
+                        </h5>
+                        <div class="bg-[#FFF9F2] p-3 md:p-4 rounded-xl border border-[#F5D7C4]">
+                            <p class="text-xs md:text-sm text-[#5C4231] leading-relaxed">
+                                <span class="font-black text-[#8C5A46] block mb-1">Rota & Instruções:</span>
+                                ${card.route}
+                            </p>
+                        </div>
+                        <div class="mt-3 flex justify-end">
+                            <span class="inline-flex items-center gap-1 text-[10px] font-black bg-[#E2CFC2]/30 text-[#8C5A46] px-2 py-1 rounded-md">
+                                ⏱️ Tempo ref: ${card.time}
+                            </span>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        
+        // Scroll to top of content on mobile
+        content.scrollTop = 0;
+    };
+
     window.openAiAssistant = function() {
         const modal = document.getElementById('ai-modal');
         document.getElementById('ai-modal-title').innerText = "Assistente Koyo IA";
@@ -965,5 +1119,7 @@
 
     window.onload = initApp;
 </script>
+</body>
+</html>
 </body>
 </html>
