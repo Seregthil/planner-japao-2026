@@ -230,11 +230,12 @@
     </section>
 
     <!-- Secção Logística -->
-    <section id="section-logistica" class="hidden space-y-6">
-        <div class="bg-white p-6 md:p-8 rounded-3xl border border-[#F5D7C4] shadow-md">
-            
-            <!-- BANNER GUIA DE BOLSO DE TRANSPORTES -->
-            <div class="mb-10 p-6 md:p-8 rounded-3xl bg-gradient-to-r from-[#FDEBD0] to-[#FADBD8] border border-[#F5D7C4] shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+                <button onclick="window.filterPhase(4)" class="phase-btn px-4 py-2 rounded-full border border-[#F5D7C4] bg-white text-[#8C5A46] text-xs font-bold transition-all whitespace-nowrap hover:bg-[#FFF5EB] shadow-sm" id="f-4">Fase 4: Tóquio Oeste</button>
+            </div>
+        </div>
+        <div id="itinerary-canvas" class="space-y-10"></div>
+    </section>
+
     <!-- Seção Logística -->
     <section id="section-logistica" class="hidden space-y-6">
         <div class="bg-white p-6 md:p-8 rounded-3xl border border-[#F5D7C4] shadow-md">
@@ -966,9 +967,11 @@
 
     window.showSection = function(id) {
         document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
-        document.getElementById('section-' + id).classList.remove('hidden');
+        const target = document.getElementById('section-' + id);
+        if(target) target.classList.remove('hidden');
         document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-        document.getElementById('btn-' + id).classList.add('active');
+        const btn = document.getElementById('btn-' + id);
+        if(btn) btn.classList.add('active');
         if (id === 'itinerario') window.renderItinerary(window.currentPhase);
         if (id === 'logistica') window.renderLogistics();
     };
@@ -977,8 +980,15 @@
 
     window.renderAll = function() {
         renderDashboard();
-        if(!document.getElementById('section-itinerario').classList.contains('hidden')) renderItinerary(window.currentPhase);
-        if(!document.getElementById('section-logistica').classList.contains('hidden')) renderLogistics();
+        const secIti = document.getElementById('section-itinerario');
+        const secLog = document.getElementById('section-logistica');
+        
+        if (secIti && !secIti.classList.contains('hidden')) {
+            renderItinerary(window.currentPhase);
+        }
+        if (secLog && !secLog.classList.contains('hidden')) {
+            renderLogistics();
+        }
     };
 
     window.updateField = function(type, p, d, e, el) {
